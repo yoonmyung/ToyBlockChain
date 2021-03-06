@@ -1,0 +1,13 @@
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\xunit.runner.visualstudio.dotnetcore.testadapter.dll
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\xunit.runner.reporters.netcoreapp10.dll
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\xunit.runner.utility.netcoreapp10.dll
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\practiceBlockchain.deps.json
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\practiceBlockchain.runtimeconfig.json
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\practiceBlockchain.runtimeconfig.dev.json
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\practiceBlockchain.dll
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\bin\Debug\netcoreapp2.1\practiceBlockchain.pdb
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\obj\Debug\netcoreapp2.1\practiceBlockchain.csprojAssemblyReference.cache
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\obj\Debug\netcoreapp2.1\practiceBlockchain.csproj.CoreCompileInputs.cache
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\obj\Debug\netcoreapp2.1\practiceBlockchain.dll
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\obj\Debug\netcoreapp2.1\practiceBlockchain.pdb
+C:\Users\1229k\Desktop\인턴\BlockChain\practiceBlockchain\obj\Debug\netcoreapp2.1\practiceBlockchain.genruntimeconfig.cache

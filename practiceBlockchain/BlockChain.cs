@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Text;
 
@@ -10,31 +11,21 @@ namespace practiceBlockchain
         static readonly Dictionary<byte[], Block> blocks 
             = new Dictionary<byte[], Block>(new ByteArrayComparer());
         private static long difficulty = 0;
-        private static long minimumDifficulty = 1024;
+        private readonly static long minimumDifficulty = 1024;
+        private readonly static long difficultyBoundDivisor = 128;
 
         //minimumMultiplier, minimumDifficulty는 난이도 조절(difficulty 값 조절)을 위해
 
-        private static long difficultyBoundDivisor = 128;
-
-        public static byte[] makeBlock(
+        public static Block MakeBlock(
             byte[] previousHash, 
             byte[] hashValue, 
             DateTimeOffset timeStamp, 
             int nonce
         )
         {
-            if (previousHash is null)   //genesis block
-            {
-                previousHash = new byte[] { };
-                blocks.Add(hashValue, new Block(previousHash, timeStamp, nonce));
-            }
-            else
-            {
-                blocks.Add(hashValue, new Block(previousHash, timeStamp, nonce));
-                updateDifficulty(blocks[previousHash].TimeStamp, timeStamp);
-            }
+            blocks.Add(hashValue, new Block(previousHash, timeStamp, nonce));
 
-            return hashValue;
+            return GetBlock(hashValue);
         }
 
         public static int Difficulty
@@ -42,7 +33,7 @@ namespace practiceBlockchain
             get;
         }
 
-        public static void updateDifficulty (
+        public static long UpdateDifficulty (
             DateTimeOffset previouTimeStamp, 
             DateTimeOffset currentTimeStamp
         )
@@ -60,10 +51,10 @@ namespace practiceBlockchain
             long nextDifficulty = Convert.ToInt64(prevDifficulty + (offset * multiplier));
             difficulty = Math.Max(nextDifficulty, minimumDifficulty);
 
-            Console.WriteLine($"difficulty changed: {prevDifficulty} -> {difficulty}");
+            return difficulty;
         }
 
-        public static Block getBlock(byte[] hashValue)
+        public static Block GetBlock(byte[] hashValue)
         {
             Block returnedBlock = null;
 
@@ -78,7 +69,15 @@ namespace practiceBlockchain
             return returnedBlock;
         }
 
-        public static IEnumerable<byte[]> iterateBlock()
+        public static byte[] GetHash(Block blockToGetHash)
+        {
+            var returnedHash = 
+                blocks.FirstOrDefault(block => block.Value == blockToGetHash).Key;
+
+            return returnedHash;
+        }
+
+        public static IEnumerable<byte[]> IterateBlock()
         {
             foreach(byte[] hashofBlock in blocks.Keys)
             {

@@ -9,9 +9,9 @@ namespace practiceBlockchain
 {
     public class Block
     {
-        byte[] previousHash;
-        DateTimeOffset timeStamp;
-        int nonce;
+        readonly static byte[] previousHash;
+        static readonly DateTimeOffset timeStamp;
+        static int nonce;
 
         public Block(byte[] previousHash, DateTimeOffset timeStamp, int nonce) 
         {
@@ -20,36 +20,28 @@ namespace practiceBlockchain
             Nonce = nonce;
         }
 
-        public byte[] calculateHash(int difficulty, byte[] previousHash)
+        public static byte[] CalculateHash(byte[] previousHash)
         {
-            using SHA256 hashAlgo = SHA256.Create();
+            SHA256 hashAlgo = SHA256.Create();
             BigInteger hashValue;
+            long difficulty = BlockChain.Difficulty;
 
             do
             {
                 if (previousHash == null)   //genesis block
                 {
-                    previousHash = new byte[] {};
                     hashValue = 0;
                     break;
                 }
                 byte[] nonceByte = BitConverter.GetBytes(++nonce);
-                byte[] hashInput = makeHashInput(previousHash, nonceByte);
+                byte[] hashInput = MakeHashInput(previousHash, nonceByte);
                 hashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
             } while (hashValue < difficulty);
 
-            previousHash = 
-                BlockChain.makeBlock(
-                    previousHash, 
-                    hashValue.ToByteArray(), 
-                    DateTimeOffset.Now, 
-                    nonce
-                );
-
-            return previousHash;
+            return hashValue.ToByteArray();
         }
 
-        private byte[] makeHashInput(byte[] previousHash, byte[] nonce)
+        private static byte[] MakeHashInput(byte[] previousHash, byte[] nonce)
         {
             return previousHash.Concat(nonce).ToArray();
         }
