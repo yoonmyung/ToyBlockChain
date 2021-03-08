@@ -16,13 +16,12 @@ namespace BlockChain_Test
                 0xc8, 0xfe, 0xb0, 0x8a, 0xfe, 0x2e, 0x97, 0xc9, 0x9e, 0x3f, 0x33, 0x89,
                 0xda, 0x02, 0x5f, 0xd0, 0x66, 0x5c, 0x62, 0x1c
             };
-            var nonce = 5;
 
             return BlockChain.MakeBlock(
                 previousHash: null,
                 hashValue: hashValue,
                 timeStamp: timestamp,
-                nonce: nonce
+                nonce: new Nonce()
             );
         }
 
@@ -34,7 +33,7 @@ namespace BlockChain_Test
                 previousHash: previousHash,
                 hashValue: Block.CalculateHash(previousHash),
                 timeStamp: previousBlock.TimeStamp.AddDays(1),
-                nonce: 1
+                nonce: new Nonce()
             );
         }
 
@@ -50,9 +49,10 @@ namespace BlockChain_Test
         public void CanMine()
         {
             Block genesis = MineGenesis();
+
             Assert.Null(genesis.PreviousHash);
             Assert.Equal(new DateTime(2021, 03, 04), genesis.TimeStamp);
-            Assert.Equal(5, genesis.Nonce);
+            Assert.NotNull(genesis.Nonce.NonceValue);
 
             Block next = MineNext(genesis);
             Assert.Equal(BlockChain.GetHash(genesis), next.PreviousHash);

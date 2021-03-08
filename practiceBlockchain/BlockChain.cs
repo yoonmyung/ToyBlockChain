@@ -20,7 +20,7 @@ namespace practiceBlockchain
             byte[] previousHash, 
             byte[] hashValue, 
             DateTimeOffset timeStamp, 
-            int nonce
+            Nonce nonce
         )
         {
             blocks.Add(hashValue, new Block(previousHash, timeStamp, nonce));

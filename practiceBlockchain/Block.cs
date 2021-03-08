@@ -11,9 +11,9 @@ namespace practiceBlockchain
     {
         readonly static byte[] previousHash;
         static readonly DateTimeOffset timeStamp;
-        static int nonce;
+        static Nonce nonce = new Nonce();
 
-        public Block(byte[] previousHash, DateTimeOffset timeStamp, int nonce) 
+        public Block(byte[] previousHash, DateTimeOffset timeStamp, Nonce nonce) 
         {
             PreviousHash = previousHash;
             TimeStamp = timeStamp;
@@ -33,20 +33,21 @@ namespace practiceBlockchain
                     hashValue = 0;
                     break;
                 }
-                byte[] nonceByte = BitConverter.GetBytes(++nonce);
-                byte[] hashInput = MakeHashInput(previousHash, nonceByte);
+                //libplanet에서는 Nonce에 매번 랜덤값을 할당하는 것으로 1씩 증가하는 것을 대신함
+                nonce.updateNonce();
+                byte[] hashInput = MakeHashInput(previousHash, nonce);
                 hashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
             } while (hashValue < difficulty);
 
             return hashValue.ToByteArray();
         }
 
-        private static byte[] MakeHashInput(byte[] previousHash, byte[] nonce)
+        private static byte[] MakeHashInput(byte[] previousHash, Nonce nonce)
         {
-            return previousHash.Concat(nonce).ToArray();
+            return previousHash.Concat(nonce.NonceValue).ToArray();
         }
 
-        public int Nonce
+        public Nonce Nonce
         {
             get; set;
         }
