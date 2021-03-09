@@ -5915,9 +5915,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\practiceBlockchain.csproj",
-      "projectName": "practiceBlockchain",
-      "projectPath": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\practiceBlockchain.csproj",
+      "projectUniqueName": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\PracticeBlockChain.csproj",
+      "projectName": "PracticeBlockChain",
+      "projectPath": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\PracticeBlockChain.csproj",
       "packagesPath": "C:\\Users\\1229k\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\obj\\",
       "projectStyle": "PackageReference",

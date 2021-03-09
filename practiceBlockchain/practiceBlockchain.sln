@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30711.63
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "practiceBlockchain", "practiceBlockchain.csproj", "{73DC112E-194E-471F-A8A8-673511D25049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain", "PracticeBlockChain.csproj", "{73DC112E-194E-471F-A8A8-673511D25049}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlockChain_Test", "..\BlockChain_Test\BlockChain_Test.csproj", "{5C58B741-3617-4EB2-A594-07C82A4E868B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.Test", "..\BlockChain_Test\PracticeBlockChain.Test.csproj", "{5C58B741-3617-4EB2-A594-07C82A4E868B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

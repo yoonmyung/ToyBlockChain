@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "IAVL+aGvNHGEfGgSoO9axD7qGDd+p14mjXY4BvjE7Qt0VqtR8vnhUXchGm4PwMK8RgXVwpa/3FD24dqQs/tnug==",
+  "dgSpecHash": "qMO63a9l2sWfV64pdKiF1zTE025yHGf1GkDG/rKnBfhQCMv5IIjmK3BLal4g8BuXKlffeT9BKVxNR9Lyjm18Fw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\practiceBlockchain.csproj",
+  "projectFilePath": "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\practiceBlockchain\\PracticeBlockChain.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\1229k\\.nuget\\packages\\microsoft.csharp\\4.0.1\\microsoft.csharp.4.0.1.nupkg.sha512",
     "C:\\Users\\1229k\\.nuget\\packages\\microsoft.net.test.sdk\\15.0.0\\microsoft.net.test.sdk.15.0.0.nupkg.sha512",

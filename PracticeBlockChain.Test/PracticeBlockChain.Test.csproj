@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\practiceBlockchain\practiceBlockchain.csproj" />
+    <ProjectReference Include="..\practiceBlockchain\PracticeBlockChain.csproj" />
   </ItemGroup>
 
 </Project>
