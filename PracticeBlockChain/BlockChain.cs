@@ -25,6 +25,7 @@ namespace PracticeBlockChain
                        new Block(index, previousHash, timeStamp, nonce, difficulty));
         }
 
+        // GetBlock과 GetHashofBlock은 Block.cs로 가는 게 맞음
         public Block GetBlock(byte[] hashValue)
         {
             Block returnedBlock = blocks[hashValue];
@@ -32,15 +33,15 @@ namespace PracticeBlockChain
             return returnedBlock;
         }
 
-/*        public byte[] GetHashofBlock(Block blockToGetHash)
+        public byte[] GetHashofBlock(Block blockToGetHash)
         {
             var returnedHash = 
                 blocks.FirstOrDefault(block => block.Value == blockToGetHash).Key;
 
             return returnedHash;
         }
-*/
-        public static IEnumerable<byte[]> IterateBlock()
+
+        public IEnumerable<Block> IterateBlock()
         {
             foreach(Block block in blocks.Values)
             {

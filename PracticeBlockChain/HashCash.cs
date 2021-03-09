@@ -20,7 +20,7 @@ namespace PracticeBlockChain
                     break;
                 }
                 byte[] hashInput = 
-                    MakeHashInput(
+                    Serialization.SerializeHashInput(
                         previousHash, 
                         new NonceGenerator().GenerateNonce(), 
                         previousBlock.TimeStamp
@@ -28,19 +28,9 @@ namespace PracticeBlockChain
                 hashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
             } while (hashValue < previousBlock.Difficulty);
 
-            // Need to implement a validation.
+            // In here, need to implement a validation.
 
             return hashValue.ToByteArray();
-        }
-
-        private byte[] MakeHashInput
-            (byte[] previousHash, Nonce nonce, DateTimeOffset timeStamp)
-        {
-            NonceGenerator nonceGenerator = new NonceGenerator();
-
-            return previousHash.Concat(nonceGenerator.GenerateNonce().NonceValue)
-                               .Concat(BitConverter.GetBytes(timeStamp.Offset.TotalMinutes))
-                               .ToArray();
         }
     }
 }

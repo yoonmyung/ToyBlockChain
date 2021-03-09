@@ -4,12 +4,12 @@ using System.Text;
 
 namespace PracticeBlockChain
 {
-    class DifficultyUpdater
+    public static class DifficultyUpdater
     {
-        private readonly long minimumDifficulty = 1024;
-        private readonly long difficultyBoundDivisor = 128;
+        public static readonly long minimumDifficulty = 1024;
+        public static readonly long difficultyBoundDivisor = 128;
 
-        public long UpdateDifficulty(
+        public static long UpdateDifficulty(
             Block prevBlock,
             DateTimeOffset previouTimeStamp,
             DateTimeOffset currentTimeStamp

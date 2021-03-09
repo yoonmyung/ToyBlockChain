@@ -13,7 +13,7 @@ namespace PracticeBlockChain
         private readonly byte[] previousHash;
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
-        private readonly long difficulty = 0;
+        private readonly long difficulty;
 
         public Block(
             long index, 
