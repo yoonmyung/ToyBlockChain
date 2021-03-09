@@ -6,7 +6,7 @@ using System.Text;
 
 //byte[]끼리 비교해야 하는 경우 아예 자료형을 만들어서 비교
 //libplanet/Libplanet.Stun/Stun/TurnClient.cs
-namespace practiceBlockchain
+namespace PracticeBlockChain
 {
     class ByteArrayComparer : IEqualityComparer<byte[]>
     {
