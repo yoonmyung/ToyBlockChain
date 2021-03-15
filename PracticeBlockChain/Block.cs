@@ -7,26 +7,28 @@ using System.Text;
 
 namespace PracticeBlockChain
 {
+    [Serializable]
     public class Block
     {
         private readonly long index;
         private readonly byte[] previousHash;
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
-        private readonly long difficulty;
+        private readonly Action action;
 
         public Block(
             long index, 
             byte[] previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
-            long difficulty) 
+            Action action
+        ) 
         {
             Index = index;
             PreviousHash = previousHash;
             TimeStamp = timeStamp;
             Nonce = nonce;
-            Difficulty = difficulty;
+            Action = action;
         }
 
         public long Index
@@ -49,7 +51,7 @@ namespace PracticeBlockChain
             get; set;
         }
 
-        public long Difficulty
+        public Action Action
         {
             get; set;
         }

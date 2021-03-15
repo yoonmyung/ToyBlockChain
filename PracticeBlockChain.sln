@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain", "PracticeBlockChain\PracticeBlockChain.csproj", "{5FCFC7E3-3F2A-4B17-AE79-807091FFD27D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.Test", "PracticeBlockChain.Test\PracticeBlockChain.Test.csproj", "{CA14FFE1-0078-418E-B81F-4A9B1DA62334}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Game", "TicTacToe\Game.csproj", "{65E411C0-5960-4323-ACD7-86251B4897C3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5FCFC7E3-3F2A-4B17-AE79-807091FFD27D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FCFC7E3-3F2A-4B17-AE79-807091FFD27D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FCFC7E3-3F2A-4B17-AE79-807091FFD27D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FCFC7E3-3F2A-4B17-AE79-807091FFD27D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65E411C0-5960-4323-ACD7-86251B4897C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65E411C0-5960-4323-ACD7-86251B4897C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65E411C0-5960-4323-ACD7-86251B4897C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65E411C0-5960-4323-ACD7-86251B4897C3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C3225D29-40DE-4B07-AEEE-00A397278179}
+	EndGlobalSection
+EndGlobal

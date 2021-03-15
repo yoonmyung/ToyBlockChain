@@ -10,14 +10,14 @@ namespace PracticeBlockChain
         public static readonly long difficultyBoundDivisor = 128;
 
         public static long UpdateDifficulty(
-            Block prevBlock,
+            long difficulty,
             DateTimeOffset previouTimeStamp,
             DateTimeOffset currentTimeStamp
         )
         {
             //EIP-2
             //Libplanet/Blockchain/Policies/BlockPolicy.cs 참조 
-            long prevDifficulty = prevBlock.Difficulty;
+            long prevDifficulty = difficulty;
             TimeSpan timeInterval = currentTimeStamp - previouTimeStamp;
             const long minimumMultiplier = -99;
             double multiplier =

@@ -1,36 +1,42 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
 
 namespace PracticeBlockChain
 {
-    public class HashCash
+    public static class HashCash
     {
-        public byte[] CalculateHash(Block previousBlock, byte[] previousHash)
+        public static KeyValuePair<Nonce, byte[]> CalculateHash(
+            Block previousBlock, 
+            byte[] previousHash,
+            BlockChain blockChain
+        )
         {
             SHA256 hashAlgo = SHA256.Create();
-            BigInteger hashValue;
+            HashDigest hashDigest = new HashDigest();
+            Nonce nonce = null;
 
             do
             {
                 if (previousBlock == null)   // It's a genesis block.
                 {
-                    hashValue = 0;
+                    hashDigest.HashValue = 0;
                     break;
                 }
-                byte[] hashInput = 
-                    Serialization.SerializeHashInput(
+                nonce = new NonceGenerator().GenerateNonce();
+                byte[] hashInput =
+                    Serialization.SerializeforBlock(
                         previousHash, 
-                        new NonceGenerator().GenerateNonce(), 
+                        nonce, 
                         previousBlock.TimeStamp
                     );
-                hashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
-            } while (hashValue < previousBlock.Difficulty);
+                hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
+            } while (hashDigest.HashValue < blockChain.Difficulty);
 
-            // In here, need to implement a validation.
-
-            return hashValue.ToByteArray();
+            return new KeyValuePair<Nonce, byte[]> 
+                (nonce, hashDigest.HashValue.ToByteArray());
         }
     }
 }

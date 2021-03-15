@@ -4,9 +4,19 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <StartupObject>PracticeBlockChain.Test.TictactoeTest</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AddressExtensionsTest.cs" />
+    <Compile Remove="CryptoTest.cs" />
+    <Compile Remove="KeyTest.cs" />
+    <Compile Remove="PracticeBlockChainTest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bencodex" Version="0.2.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -21,6 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\practiceBlockchain\PracticeBlockChain.csproj" />
+    <ProjectReference Include="..\TicTacToe\Game.csproj" />
   </ItemGroup>
 
 </Project>
