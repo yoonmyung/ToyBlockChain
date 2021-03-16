@@ -8,9 +8,9 @@ namespace PracticeBlockChain
 {
     public static class HashCash
     {
-        public static KeyValuePair<Nonce, byte[]> CalculateHash(
+        public static Nonce CalculateHash(
             Block previousBlock, 
-            byte[] previousHash,
+            HashDigest previousHash,
             BlockChain blockChain
         )
         {
@@ -20,23 +20,23 @@ namespace PracticeBlockChain
 
             do
             {
-                if (previousBlock == null)   // It's a genesis block.
+                // It's a genesis block.
+                if (previousBlock == null)
                 {
                     hashDigest.HashValue = 0;
                     break;
                 }
                 nonce = new NonceGenerator().GenerateNonce();
                 byte[] hashInput =
-                    Serialization.SerializeforBlock(
-                        previousHash, 
-                        nonce, 
+                    Block.Serialize(
+                        previousHash.ToByteArray(),
+                        nonce,
                         previousBlock.TimeStamp
                     );
                 hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
             } while (hashDigest.HashValue < blockChain.Difficulty);
 
-            return new KeyValuePair<Nonce, byte[]> 
-                (nonce, hashDigest.HashValue.ToByteArray());
+            return nonce;
         }
     }
 }
