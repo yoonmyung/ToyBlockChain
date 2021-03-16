@@ -6,14 +6,14 @@ namespace Game
 {
     public static class PrintingResult
     {
-        public static void PrintState(Tuple<string, Position> storedState)
+        public static void PrintState((string player, Position position) storedState)
         {
             Console.WriteLine(
-                $"{storedState.Item1}: " + 
-                $"<{storedState.Item2.X}, {storedState.Item2.Y}>에 말을 둠"
+                $"{storedState.player}: " + 
+                $"<{storedState.position.X}, {storedState.position.Y}>에 말을 둠"
             );
             Console.WriteLine("<현재 보드판>");
-            Printboard(storedState.Item1, storedState.Item2);
+            Printboard(storedState.player, storedState.position);
         }
 
         private static void Printboard(string player, Position position)

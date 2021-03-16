@@ -13,8 +13,7 @@ namespace PracticeBlockChain.Crypto
     {
         public static byte[] Sign(HashDigest messageHash, PrivateKey privateKey)
         {
-            // messageHash가 서명할 action같음
-
+            // Action is a variable 'messageHash'.
             var h = new Sha256Digest();
             var kCalculator = new HMacDsaKCalculator(h);
             var signer = new ECDsaSigner(kCalculator);
