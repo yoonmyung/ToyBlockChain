@@ -15,31 +15,6 @@ namespace PracticeBlockChain
 {
     public class Serialization
     {
-        // 1. Hashcash의 input으로 들어가는 Block
-        // 2. Sign의 파라미터로 들어가기 위해 Hashing하는 Action
-
-        public static byte[] SerializeforAction(Action action)
-        {
-            byte[] input = action.Nonce.ToByteArray()
-               .Concat(action.Signer.AddressValue)
-               .Concat(action.Payload)
-               .ToArray();
-            return Serialize(input);
-        }
-
-        public static byte[] SerializeforBlock(
-            byte[] previousHash, 
-            Nonce nonce, 
-            DateTimeOffset timeStamp
-        )
-        {
-            byte[] input = previousHash
-                           .Concat(nonce.NonceValue)
-                           .Concat(BitConverter.GetBytes(timeStamp.Offset.TotalMinutes))
-                           .ToArray();
-            return Serialize(input);
-        }
-
         public static byte[] Serialize(object obj)
         {
             byte[] bytes;
