@@ -1,5 +1,8 @@
-﻿using System;
+﻿using PracticeBlockChain;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Game
 {
@@ -8,19 +11,19 @@ namespace Game
         private readonly string[,] board = new string[3, 3];
         private readonly Dictionary<string, Position> storedStates;
 
-        public void Execute(Tuple<string, Position> statetoUpdate)
+        public void Execute((string player, Position position) statetoUpdate)
         {
-            board[statetoUpdate.Item2.X, statetoUpdate.Item2.Y] = 
-                statetoUpdate.Item1;
+            board[statetoUpdate.position.X, statetoUpdate.position.Y] = 
+                statetoUpdate.player;
             PrintingResult.PrintState(statetoUpdate);
-            storedStates.Add(statetoUpdate.Item1, statetoUpdate.Item2);
+            storedStates.Add(statetoUpdate.player, statetoUpdate.position);
         }
 
-        public bool IsAbletoPut(Tuple<string, Position> input)
+        public bool IsAbletoPut((string player, Position position) input)
         {
             // If IsAbletoPut() returns False, 
             // it means another player already put his token on that position.
-            if (board[input.Item2.X, input.Item2.Y].Length > 0)
+            if (board[input.position.X, input.position.Y].Length > 0)
             {
                 return false;
             }
@@ -47,6 +50,13 @@ namespace Game
                 }
             }
             return false;
+        }
+
+        public static byte[] Serialize(Position position)
+        {
+            byte[] input = (byte[])BitConverter.GetBytes(position.X)
+                           .Concat(BitConverter.GetBytes(position.Y));
+            return Serialization.Serialize(input);
         }
     }
 }
