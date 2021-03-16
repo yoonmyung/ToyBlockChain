@@ -1,6 +1,7 @@
 ﻿using PracticeBlockChain;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Game
@@ -25,16 +26,19 @@ namespace Game
             Address = address;
         }
 
-        public KeyValuePair<string, Position> Put(string name, Position position)
+        public Position Put(Position position)
         {
-            KeyValuePair<string, Position> input 
-                = new KeyValuePair<string, Position>(name, position);
-            return input;
+            return new Position(position.X, position.Y);
         }
 
         public string Name
         {
             get; set;
+        }
+
+        public PrivateKey PrivateKey
+        {
+            get;
         }
 
         public PublicKey PublicKey
