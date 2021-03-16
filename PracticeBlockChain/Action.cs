@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace PracticeBlockChain
@@ -25,7 +27,7 @@ namespace PracticeBlockChain
             Nonce = nonce;
             Signer = signer;
             PublicKey = publicKey;
-            PrivateKey = privateKey;
+            this.privateKey = privateKey;
             Payload = payload;
         }
 
@@ -44,14 +46,28 @@ namespace PracticeBlockChain
             get; set;
         }
 
-        public PrivateKey PrivateKey
-        {
-            get;  set;
-        }
-
         public byte[] Payload
         {
             get; set;
+        }
+
+        public static byte[] Serialize(Action action)
+        {
+            byte[] input = action.Nonce.ToByteArray()
+                           .Concat(action.Signer.AddressValue)
+                           .Concat(action.Payload)
+                           .ToArray();
+            return Serialization.Serialize(input);
+        }
+
+        public static HashDigest Hash(Action action)
+        {
+            // Hash the action to sign.
+            SHA256 hashAlgo = SHA256.Create();
+            HashDigest hashDigest = new HashDigest();
+            byte[] hashInput = Action.Serialize(action);
+            hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
+            return hashDigest;
         }
     }
 }
