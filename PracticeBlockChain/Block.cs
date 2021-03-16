@@ -11,24 +11,24 @@ namespace PracticeBlockChain
     public class Block
     {
         private readonly long index;
-        private readonly byte[] previousHash;
+        private readonly HashDigest previousHash;
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
-        private readonly Action action;
+        private readonly byte[] signature;
 
         public Block(
             long index, 
-            byte[] previousHash, 
+            HashDigest previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
-            Action action
+            byte[] signature
         ) 
         {
             Index = index;
             PreviousHash = previousHash;
             TimeStamp = timeStamp;
             Nonce = nonce;
-            Action = action;
+            Signature = signature;
         }
 
         public long Index
@@ -41,7 +41,7 @@ namespace PracticeBlockChain
             get; set;
         }
 
-        public byte[] PreviousHash
+        public HashDigest PreviousHash
         {
             get; set;
         }
@@ -51,9 +51,30 @@ namespace PracticeBlockChain
             get; set;
         }
 
-        public Action Action
+        public byte[] Signature
         {
             get; set;
+        }
+
+        public static byte[] Serialize(
+            byte[] previousHash,
+            Nonce nonce,
+            DateTimeOffset timeStamp
+        )
+        {
+            byte[] input = previousHash
+                           .Concat(nonce.NonceValue)
+                           .Concat(BitConverter.GetBytes(timeStamp.Offset.TotalMinutes))
+                           .ToArray();
+            return Serialization.Serialize(input);
+        }
+
+        public static HashDigest Hash(Nonce nonce)
+        {
+            SHA256 hashAlgo = SHA256.Create();
+            HashDigest hashDigest = new HashDigest();
+            hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(nonce.NonceValue));
+            return hashDigest;
         }
     }
 }
