@@ -8,18 +8,18 @@ namespace PracticeBlockChain
 {
     public class BlockChain
     {
-        private readonly Dictionary<byte[], Block> blocks 
-            = new Dictionary<byte[], Block>(new ByteArrayComparer());
+        private readonly Dictionary<HashDigest, Block> blocks 
+            = new Dictionary<HashDigest, Block>();
         private readonly Block genesisBlock;
         private readonly long difficulty = 0;
 
         public BlockChain(
             long index,
-            byte[] previousHash,
-            byte[] hashValue,
+            HashDigest previousHash,
+            HashDigest hashValue,
             DateTimeOffset timeStamp,
             Nonce nonce,
-            Action action
+            byte[] signature
         )
         {
             genesisBlock = new Block(
@@ -27,7 +27,7 @@ namespace PracticeBlockChain
                 previousHash,
                 timeStamp,
                 nonce,
-                action
+                signature
             );
             blocks.Add(hashValue,
                 new Block(
@@ -35,18 +35,18 @@ namespace PracticeBlockChain
                     previousHash,
                     timeStamp,
                     nonce,
-                    action
+                    signature
                 )
             );
         }
 
         public void MakeBlock(
             long index,
-            byte[] previousHash, 
-            byte[] hashValue, 
+            HashDigest previousHash, 
+            HashDigest hashValue, 
             DateTimeOffset timeStamp, 
             Nonce nonce,
-            Action action
+            byte[] signature
         )
         {
             // After validate block, then add the block to the blockchain.
@@ -56,7 +56,7 @@ namespace PracticeBlockChain
                     previousHash, 
                     timeStamp, 
                     nonce, 
-                    action
+                    signature
                 )
             );
             Difficulty = DifficultyUpdater.UpdateDifficulty(
@@ -64,18 +64,10 @@ namespace PracticeBlockChain
             );
         }
 
-        // GetBlock과 GetHashofBlock은 Block.cs로 가는 게 맞음
-        public Block GetBlock(byte[] hashValue)
+        public Block GetBlock(HashDigest hashValue)
         {
             Block returnedBlock = blocks[hashValue];
             return returnedBlock;
-        }
-
-        public byte[] GetHashofBlock(Block blockToGetHash)
-        {
-            var returnedHash = 
-                blocks.FirstOrDefault(block => block.Value == blockToGetHash).Key;
-            return returnedHash;
         }
 
         public IEnumerable<Block> IterateBlock()
