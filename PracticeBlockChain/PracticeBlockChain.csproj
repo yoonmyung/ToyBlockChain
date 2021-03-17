@@ -15,9 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="HashDigest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Bencodex" Version="0.2.0" />
     <PackageReference Include="BouncyCastle" Version="1.8.9" />
-    <PackageReference Include="System.ValueTuple" Version="4.5.0" />
     <PackageReference Include="xunit.assert" Version="2.4.1" />
     <PackageReference Include="xunit.extensibility.core" Version="2.4.1" />
   </ItemGroup>
@@ -40,6 +43,11 @@
 <ItemGroup>
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="..\PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj" />
+  <ProjectReference Include="..\PracticeBlockChain.TicTacToeGame\PracticeBlockChain.TicTacToeGame.csproj" />
 </ItemGroup>
 
 </Project>

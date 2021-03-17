@@ -7,7 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain", "Pract
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.Test", "PracticeBlockChain.Test\PracticeBlockChain.Test.csproj", "{CA14FFE1-0078-418E-B81F-4A9B1DA62334}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Game", "TicTacToe\Game.csproj", "{65E411C0-5960-4323-ACD7-86251B4897C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.TicTacToeGame", "PracticeBlockChain.TicTacToeGame\PracticeBlockChain.TicTacToeGame.csproj", "{001269B4-6A88-4D27-B34B-3ABD20D65D61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PracticeBlockChain.Cryptography", "PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj", "{B3FE2630-5DC4-4848-8646-13B006113B22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +25,14 @@ Global
 		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA14FFE1-0078-418E-B81F-4A9B1DA62334}.Release|Any CPU.Build.0 = Release|Any CPU
-		{65E411C0-5960-4323-ACD7-86251B4897C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{65E411C0-5960-4323-ACD7-86251B4897C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{65E411C0-5960-4323-ACD7-86251B4897C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{65E411C0-5960-4323-ACD7-86251B4897C3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{001269B4-6A88-4D27-B34B-3ABD20D65D61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{001269B4-6A88-4D27-B34B-3ABD20D65D61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{001269B4-6A88-4D27-B34B-3ABD20D65D61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{001269B4-6A88-4D27-B34B-3ABD20D65D61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3FE2630-5DC4-4848-8646-13B006113B22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3FE2630-5DC4-4848-8646-13B006113B22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3FE2630-5DC4-4848-8646-13B006113B22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3FE2630-5DC4-4848-8646-13B006113B22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
