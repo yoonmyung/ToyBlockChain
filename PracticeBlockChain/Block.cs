@@ -11,14 +11,14 @@ namespace PracticeBlockChain
     public class Block
     {
         private readonly long index;
-        private readonly HashDigest previousHash;
+        private readonly BigInteger previousHash;
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
         private readonly byte[] signature;
 
         public Block(
             long index, 
-            HashDigest previousHash, 
+            BigInteger previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
             byte[] signature
@@ -33,47 +33,48 @@ namespace PracticeBlockChain
 
         public long Index
         {
-            get; set;
+            get;
         }
 
         public Nonce Nonce
         {
-            get; set;
+            get;
         }
 
-        public HashDigest PreviousHash
+        public BigInteger PreviousHash
         {
-            get; set;
+            get;
         }
 
         public DateTimeOffset TimeStamp
         {
-            get; set;
+            get;
         }
 
         public byte[] Signature
         {
-            get; set;
+            get;
         }
 
-        public static byte[] Serialize(
-            byte[] previousHash,
-            Nonce nonce,
-            DateTimeOffset timeStamp
-        )
+        public byte[] Serialize()
         {
-            byte[] input = previousHash
-                           .Concat(nonce.NonceValue)
-                           .Concat(BitConverter.GetBytes(timeStamp.Offset.TotalMinutes))
+            byte[] input = this.previousHash.ToByteArray()
+                           .Concat(this.nonce.NonceValue)
+                           .Concat(BitConverter.GetBytes(this.timeStamp.Offset.TotalMinutes))
                            .ToArray();
             return Serialization.Serialize(input);
         }
 
-        public static HashDigest Hash(Nonce nonce)
+        public BigInteger Hash()
         {
+            // 기존에는 HashCash에서 찾은 nonce값을 해시함수에 넣어 현재 해시값을 얻는 형식이었는데
+            // 똑같은 해시값을 얻으려면 결국 nonce 뿐만 아니라 HashCash와 동일한 input을 넣어야 함
+            // 그걸 갖고 있는 게 Serialize 함수가 아닌가 해서 넣었는데.. 맞나
             SHA256 hashAlgo = SHA256.Create();
-            HashDigest hashDigest = new HashDigest();
-            hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(nonce.NonceValue));
+            BigInteger hashDigest = 
+                new BigInteger(hashAlgo.ComputeHash(
+                    (byte[])Serialize().Concat(Nonce.NonceValue))
+                );
             return hashDigest;
         }
     }
