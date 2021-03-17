@@ -23,24 +23,9 @@ namespace PracticeBlockChain
             (Player player, Position position) payload
         )
         {
-            TxNonce = txNonce;
-            Signer = signer;
-            Payload = payload;
-        }
-
-        public BigInteger TxNonce
-        {
-            get;
-        }
-
-        public Address Signer
-        {
-            get;
-        }
-
-        public (Player player, Position position) Payload
-        {
-            get;
+            this.txNonce = txNonce;
+            this.signer = signer;
+            this.payload = payload;
         }
 
         public byte[] Serialize()
@@ -49,11 +34,11 @@ namespace PracticeBlockChain
             {
                 using (var writer = new BinaryWriter(memoryStream))
                 {
-                    writer.Write(this.TxNonce.ToByteArray());
-                    writer.Write(this.Signer.AddressValue);
-                    writer.Write(this.Payload.player.Name);
-                    writer.Write(this.Payload.position.X);
-                    writer.Write(this.Payload.position.Y);
+                    writer.Write(this.txNonce.ToByteArray());
+                    writer.Write(this.signer.AddressValue);
+                    writer.Write(this.payload.player.Name);
+                    writer.Write(this.payload.position.X);
+                    writer.Write(this.payload.position.Y);
                 }
                 return memoryStream.ToArray();
             }
