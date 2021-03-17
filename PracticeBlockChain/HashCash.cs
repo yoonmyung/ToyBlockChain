@@ -10,12 +10,12 @@ namespace PracticeBlockChain
     {
         public static Nonce CalculateHash(
             Block previousBlock, 
-            HashDigest previousHash,
+            BigInteger previousHash,
             BlockChain blockChain
         )
         {
             SHA256 hashAlgo = SHA256.Create();
-            HashDigest hashDigest = new HashDigest();
+            BigInteger hashDigest;
             Nonce nonce = null;
 
             do
@@ -23,18 +23,19 @@ namespace PracticeBlockChain
                 // It's a genesis block.
                 if (previousBlock == null)
                 {
-                    hashDigest.HashValue = 0;
+                    hashDigest = 0;
                     break;
                 }
                 nonce = new NonceGenerator().GenerateNonce();
                 byte[] hashInput =
+                    // (수정 필요) 이전 블록을 알 수 있어야 함
                     Block.Serialize(
                         previousHash.ToByteArray(),
                         nonce,
                         previousBlock.TimeStamp
                     );
-                hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
-            } while (hashDigest.HashValue < blockChain.Difficulty);
+                hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
+            } while (hashDigest < blockChain.Difficulty);
 
             return nonce;
         }
