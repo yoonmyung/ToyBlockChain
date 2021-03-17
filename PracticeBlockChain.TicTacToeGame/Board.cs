@@ -8,8 +8,20 @@ namespace PracticeBlockChain.TicTacToeGame
 {
     public class Board
     {
-        private readonly string[,] board = new string[3, 3];
+        private readonly string[,] board;
         private readonly Dictionary<string, Position> storedStates;
+
+        public Board()
+        {
+            board = new string[3, 3];
+            for(var row = 0; row < 3; row++)
+            {
+                for(var calmn = 0; calmn < 3; calmn++)
+                {
+                    board[row, calmn] = "";
+                }
+            }
+        }
 
         public string[,] Put(
             string[,] currentBoard,
