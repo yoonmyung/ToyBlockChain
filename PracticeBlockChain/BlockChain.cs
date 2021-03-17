@@ -3,68 +3,47 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using PracticeBlockChain.TicTacToeGame;
 
 namespace PracticeBlockChain
 {
     public class BlockChain
     {
-        private readonly Dictionary<HashDigest, Block> blocks 
-            = new Dictionary<HashDigest, Block>();
+        private readonly Dictionary<BigInteger, Block> blocks 
+            = new Dictionary<BigInteger, Block>();
         private readonly Block genesisBlock;
         private readonly long difficulty = 0;
 
-        public BlockChain(
-            long index,
-            HashDigest previousHash,
-            HashDigest hashValue,
-            DateTimeOffset timeStamp,
-            Nonce nonce,
-            byte[] signature
-        )
+        public BlockChain()
         {
-            genesisBlock = new Block(
-                index,
-                previousHash,
-                timeStamp,
-                nonce,
-                signature
-            );
-            blocks.Add(hashValue,
-                new Block(
-                    index,
-                    previousHash,
-                    timeStamp,
-                    nonce,
-                    signature
-                )
-            );
+            MakeGenesisBlock();
         }
 
-        public void MakeBlock(
-            long index,
-            HashDigest previousHash, 
-            HashDigest hashValue, 
-            DateTimeOffset timeStamp, 
-            Nonce nonce,
-            byte[] signature
-        )
+        private void MakeGenesisBlock()
+        {
+            //빈 보드 상태
+            Block block =
+                new Block(
+                    index: 0,
+                    previousHash: 0,
+                    timeStamp: DateTimeOffset.Now,
+                    nonce: new NonceGenerator().GenerateNonce(),
+                    signature: null,
+                    state: new Board()
+                );
+            blocks.Add(0, block);
+        }
+
+        public void MakeBlock( BigInteger hashValue, Block block)
         {
             // After validate block, then add the block to the blockchain.
-            blocks.Add(hashValue, 
-                new Block(
-                    index, 
-                    previousHash, 
-                    timeStamp, 
-                    nonce, 
-                    signature
-                )
-            );
+            blocks.Add(hashValue, block);
             Difficulty = DifficultyUpdater.UpdateDifficulty(
-                Difficulty, blocks[previousHash].TimeStamp, timeStamp
+                Difficulty, blocks[block.PreviousHash].TimeStamp, block.TimeStamp
             );
         }
 
-        public Block GetBlock(HashDigest hashValue)
+        public Block GetBlock(BigInteger hashValue)
         {
             Block returnedBlock = blocks[hashValue];
             return returnedBlock;
