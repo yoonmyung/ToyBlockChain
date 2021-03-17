@@ -4,69 +4,67 @@ using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
+using PracticeBlockChain.TicTacToeGame;
+using PracticeBlockChain.Cryptography;
+using System.IO;
 
 namespace PracticeBlockChain
 {
     [Serializable]
     public class Action
     {
-        private readonly BigInteger nonce;
+        private readonly BigInteger txNonce;
         private readonly Address signer;
-        private readonly PublicKey publicKey;
-        private readonly PrivateKey privateKey;
-        private readonly byte[] payload;
+        private readonly (Player player, Position position) payload;
 
         public Action(
-            BigInteger nonce, 
+            BigInteger txNonce,
             Address signer, 
-            PublicKey publicKey,
-            PrivateKey privateKey,
-            byte[] payload
+            (Player player, Position position) payload
         )
         {
-            Nonce = nonce;
+            TxNonce = txNonce;
             Signer = signer;
-            PublicKey = publicKey;
-            this.privateKey = privateKey;
             Payload = payload;
         }
 
-        public BigInteger Nonce
+        public BigInteger TxNonce
         {
-            get; set;
+            get;
         }
 
         public Address Signer
         {
-            get; set;
+            get;
         }
 
-        public PublicKey PublicKey 
-        { 
-            get; set;
-        }
-
-        public byte[] Payload
+        public (Player player, Position position) Payload
         {
-            get; set;
+            get;
         }
 
-        public static byte[] Serialize(Action action)
+        public byte[] Serialize()
         {
-            byte[] input = action.Nonce.ToByteArray()
-                           .Concat(action.Signer.AddressValue)
-                           .Concat(action.Payload)
-                           .ToArray();
-            return Serialization.Serialize(input);
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var writer = new BinaryWriter(memoryStream))
+                {
+                    writer.Write(this.TxNonce.ToByteArray());
+                    writer.Write(this.Signer.AddressValue);
+                    writer.Write(this.Payload.player.Name);
+                    writer.Write(this.Payload.position.X);
+                    writer.Write(this.Payload.position.Y);
+                }
+                return memoryStream.ToArray();
+            }
         }
 
-        public static HashDigest Hash(Action action)
+        public BigInteger Hash()
         {
             // Hash the action to sign.
             SHA256 hashAlgo = SHA256.Create();
-            HashDigest hashDigest = new HashDigest();
-            byte[] hashInput = Action.Serialize(action);
-            hashDigest.HashValue = new BigInteger(hashAlgo.ComputeHash(hashInput));
+            byte[] hashInput = Serialize();
+            BigInteger hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
             return hashDigest;
         }
     }
