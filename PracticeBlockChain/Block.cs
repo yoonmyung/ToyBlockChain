@@ -1,4 +1,5 @@
-﻿using System;
+﻿using PracticeBlockChain.TicTacToeGame;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Numerics;
@@ -15,25 +16,23 @@ namespace PracticeBlockChain
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
         private readonly byte[] signature;
+        private readonly Board state;
 
         public Block(
             long index, 
             BigInteger previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
-            byte[] signature
+            byte[] signature,
+            Board state
         ) 
         {
-            Index = index;
+            this.index = index;
             PreviousHash = previousHash;
             TimeStamp = timeStamp;
             Nonce = nonce;
             Signature = signature;
-        }
-
-        public long Index
-        {
-            get;
+            State = state;
         }
 
         public Nonce Nonce
@@ -52,6 +51,11 @@ namespace PracticeBlockChain
         }
 
         public byte[] Signature
+        {
+            get;
+        }
+
+        public Board State
         {
             get;
         }
