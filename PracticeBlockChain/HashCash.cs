@@ -8,11 +8,7 @@ namespace PracticeBlockChain
 {
     public static class HashCash
     {
-        public static Nonce CalculateHash(
-            Block previousBlock, 
-            BigInteger previousHash,
-            BlockChain blockChain
-        )
+        public static Nonce CalculateHash(Block previousBlock, BlockChain blockChain)
         {
             SHA256 hashAlgo = SHA256.Create();
             BigInteger hashDigest;
@@ -20,20 +16,11 @@ namespace PracticeBlockChain
 
             do
             {
-                // It's a genesis block.
-                if (previousBlock == null)
-                {
-                    hashDigest = 0;
-                    break;
-                }
                 nonce = new NonceGenerator().GenerateNonce();
                 byte[] hashInput =
-                    // (수정 필요) 이전 블록을 알 수 있어야 함
-                    Block.Serialize(
-                        previousHash.ToByteArray(),
-                        nonce,
-                        previousBlock.TimeStamp
-                    );
+                    previousBlock.Serialize()
+                    .Concat(nonce.NonceValue)
+                    .ToArray();
                 hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
             } while (hashDigest < blockChain.Difficulty);
 
