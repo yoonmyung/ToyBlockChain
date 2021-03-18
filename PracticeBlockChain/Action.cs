@@ -7,50 +7,63 @@ using System.Text;
 using PracticeBlockChain.TicTacToeGame;
 using PracticeBlockChain.Cryptography;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace PracticeBlockChain
 {
     [Serializable]
     public class Action
     {
-        private readonly BigInteger txNonce;
+        // payload 자료형 변경 예정
+        private readonly long txNonce;
         private readonly Address signer;
-        private readonly (Player player, Position position) payload;
+        private readonly string payload;
 
         public Action(
-            BigInteger txNonce,
+            long txNonce,
             Address signer, 
-            (Player player, Position position) payload
+            string payload
         )
         {
-            this.txNonce = txNonce;
-            this.signer = signer;
-            this.payload = payload;
+            TxNonce = txNonce;
+            Signer = signer;
+            Payload = payload;
+        }
+
+        public long TxNonce
+        {
+            get;
+        }
+
+        public Address Signer
+        {
+            get;
+        }
+
+        public string Payload
+        {
+            get;
         }
 
         public byte[] Serialize()
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                using (var writer = new BinaryWriter(memoryStream))
-                {
-                    writer.Write(this.txNonce.ToByteArray());
-                    writer.Write(this.signer.AddressValue);
-                    writer.Write(this.payload.player.Name);
-                    writer.Write(this.payload.position.X);
-                    writer.Write(this.payload.position.Y);
-                }
-                return memoryStream.ToArray();
-            }
+            Dictionary<string, object> componentsToSerialize = new Dictionary<string, object>();
+            componentsToSerialize.Add("txNonce", TxNonce);
+            componentsToSerialize.Add("signer", Signer.AddressValue);
+            componentsToSerialize.Add("payload", Payload);
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            binFormatter.Serialize(mStream, componentsToSerialize);
+            return mStream.ToArray();
         }
 
-        public BigInteger Hash()
+        public byte[] Hash()
         {
             // Hash the action to sign.
             SHA256 hashAlgo = SHA256.Create();
             byte[] hashInput = Serialize();
             BigInteger hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
-            return hashDigest;
+            return hashDigest.ToByteArray();
         }
     }
 }
