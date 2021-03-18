@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Security;
@@ -55,7 +58,7 @@ namespace PracticeBlockChain.Cryptography
 
         public byte[] ByteArray => KeyParam.D.ToByteArrayUnsigned();
 
-        public ECPrivateKeyParameters KeyParam { get; }
+        internal ECPrivateKeyParameters KeyParam { get; }
 
         internal static ECDomainParameters GetECParameters()
         {
@@ -128,6 +131,33 @@ namespace PracticeBlockChain.Cryptography
             }
 
             return p;
+        }
+
+        public byte[] Sign(byte[] messageHash)
+        {
+            // messageHash = 서명할 Action
+            var h = new Sha256Digest();
+            var kCalculator = new HMacDsaKCalculator(h);
+            var signer = new ECDsaSigner(kCalculator);
+            signer.Init(true, this.KeyParam);
+            BigInteger[] rs =
+                signer.GenerateSignature(messageHash);
+            var r = rs[0];
+            var s = rs[1];
+
+            BigInteger otherS =
+                this.KeyParam.Parameters.N.Subtract(s);
+            if (s.CompareTo(otherS) == 1)
+            {
+                s = otherS;
+            }
+
+            var bos = new MemoryStream(72);
+            var seq = new DerSequenceGenerator(bos);
+            seq.AddObject(new DerInteger(r));
+            seq.AddObject(new DerInteger(s));
+            seq.Close();
+            return bos.ToArray();
         }
     }
 }
