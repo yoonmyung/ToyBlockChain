@@ -1,8 +1,11 @@
 ﻿using PracticeBlockChain.TicTacToeGame;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -11,36 +14,37 @@ namespace PracticeBlockChain
     [Serializable]
     public class Block
     {
+        // payload 자료형 변경 예정
         private readonly long index;
-        private readonly BigInteger previousHash;
+        private readonly byte[] previousHash;
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
         private readonly byte[] signature;
-        private readonly Board state;
+        private readonly string payload;
 
         public Block(
             long index, 
-            BigInteger previousHash, 
+            byte[] previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
             byte[] signature,
-            Board state
+            string payload
         ) 
         {
-            this.index = index;
+            Index = index;
             PreviousHash = previousHash;
             TimeStamp = timeStamp;
             Nonce = nonce;
             Signature = signature;
-            State = state;
+            Payload = payload;      // this.payload = payload; 와 차이점..??
         }
 
-        public Nonce Nonce
+        public long Index
         {
             get;
         }
 
-        public BigInteger PreviousHash
+        public byte[] PreviousHash
         {
             get;
         }
@@ -50,33 +54,48 @@ namespace PracticeBlockChain
             get;
         }
 
+        public Nonce Nonce
+        {
+            get;
+        }
+
         public byte[] Signature
         {
             get;
         }
 
-        public Board State
+        public string Payload
         {
             get;
         }
 
         public byte[] Serialize()
         {
-            byte[] input = this.previousHash.ToByteArray()
-                           .Concat(this.nonce.NonceValue)
-                           .Concat(BitConverter.GetBytes(this.timeStamp.Offset.TotalMinutes))
-                           .ToArray();
-            return Serialization.Serialize(input);
+            Dictionary<string, object> componentsToSerialize = new Dictionary<string, object>();
+            if (!(PreviousHash is null))
+            {
+                componentsToSerialize.Add("previousHash", PreviousHash);                
+            }
+            componentsToSerialize.Add("nonce", Nonce.NonceValue);
+            componentsToSerialize.Add("timeStamp", TimeStamp);
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            binFormatter.Serialize(mStream, componentsToSerialize);
+            return mStream.ToArray();
         }
 
-        public BigInteger Hash()
+        public byte[] Hash()
         {
             SHA256 hashAlgo = SHA256.Create();
-            BigInteger hashDigest = 
-                new BigInteger(hashAlgo.ComputeHash(
-                    (byte[])Serialize().Concat(Nonce.NonceValue))
+            var concatenated =
+                String.Join(
+                    "",
+                    Serialize().Concat(Nonce.NonceValue).ToArray()
                 );
-            return hashDigest;
+            var byteArray = Encoding.GetEncoding("iso-8859-1").GetBytes(concatenated);
+            BigInteger hashDigest = 
+                new BigInteger(hashAlgo.ComputeHash(byteArray));
+            return hashDigest.ToByteArray();
         }
     }
 }
