@@ -19,10 +19,10 @@ namespace PracticeBlockChain.Cryptography
 
         public byte[] AddressValue
         {
-            get; set;
+            get;
         }
 
-        private static byte[] CalculateHash(byte[] value)
+        private byte[] CalculateHash(byte[] value)
         {
             var digest = new KeccakDigest(256);
             var output = new byte[digest.GetDigestSize()];
@@ -31,7 +31,7 @@ namespace PracticeBlockChain.Cryptography
             return output;
         }
 
-        private static byte[] DeriveAddress(PublicKey key)
+        private byte[] DeriveAddress(PublicKey key)
         {
             byte[] hashPayload = key.Format(false).Skip(1).ToArray();
             var output = CalculateHash(hashPayload);
