@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Diagnostics.Contracts;
+using System.IO;
 using System.Security.Cryptography;
+using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Crypto.Signers;
 
 namespace PracticeBlockChain.Cryptography
 {
@@ -18,7 +21,7 @@ namespace PracticeBlockChain.Cryptography
             KeyParam = keyParam;
         }
 
-        public ECPublicKeyParameters KeyParam { get; }
+        internal ECPublicKeyParameters KeyParam { get; }
 
         public byte[] Format(bool compress)
         {
@@ -33,6 +36,30 @@ namespace PracticeBlockChain.Cryptography
                 ecParams.Curve.DecodePoint(bs),
                 ecParams
             );
+        }
+
+        public bool Verify(byte[] messageHash, byte[] signature)
+        {
+            // messageHash는 private key 서명을 풀었을 때 원본 대조를 위해서인듯
+            try
+            {
+                Asn1Sequence asn1Sequence = 
+                    (Asn1Sequence)Asn1Object.FromByteArray(signature);
+
+                var rs = new[]
+                {
+                    ((DerInteger)asn1Sequence[0]).Value,
+                    ((DerInteger)asn1Sequence[1]).Value,
+                };
+                var verifier = new ECDsaSigner();
+                verifier.Init(false, this.KeyParam);
+
+                return verifier.VerifySignature(messageHash, rs[0], rs[1]);
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
     }
 }
