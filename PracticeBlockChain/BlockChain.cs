@@ -1,9 +1,6 @@
-﻿using System;
+﻿using PracticeBlockChain.TicTacToeGame;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using PracticeBlockChain.TicTacToeGame;
 
 namespace PracticeBlockChain
 {
@@ -42,22 +39,31 @@ namespace PracticeBlockChain
                     previousHash: null,
                     timeStamp: DateTimeOffset.Now,
                     nonce: new NonceGenerator().GenerateNonce(),
-                    signature: null,
-                    payload: null
+                    action: null
                 );
             this.hashofTipBlock = block.Hash();
             blocks.Add(hashofTipBlock, block);
             return block;
         }
 
-        public void MakeBlock(byte[] hashValue, Block block)
+        public string[,] AddBlock(Block block, string[,] currentBoard)
         {
             // After validate block, then add the block to the blockchain.
-            blocks.Add(hashValue, block);
-            hashofTipBlock = hashValue;
-//            Board.Put(block.State, player); 
+            this.hashofTipBlock = block.Hash();
+            blocks.Add(HashofTipBlock, block);
+
+            // Execute action.
+            string[,] updatedBoard = 
+                StateController.Execute(
+                    currentState: currentBoard, 
+                    position: block.GetAction.Payload, 
+                    address: block.GetAction.Signer
+                ); 
+
+            // Update Difficulty.
             if (block.PreviousHash is null)
             {
+                // It's a genesis block.
                 Difficulty = DifficultyUpdater.UpdateDifficulty(
                     Difficulty, genesisBlock.TimeStamp, block.TimeStamp
                 );
@@ -68,6 +74,7 @@ namespace PracticeBlockChain
                     Difficulty, blocks[block.PreviousHash].TimeStamp, block.TimeStamp
                 );
             }
+            return updatedBoard;
         }
 
         public Block GetBlock(byte[] hashValue)
