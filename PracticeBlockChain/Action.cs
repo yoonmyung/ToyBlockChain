@@ -14,20 +14,22 @@ namespace PracticeBlockChain
     [Serializable]
     public class Action
     {
-        // payload 자료형 변경 예정
         private readonly long txNonce;
         private readonly Address signer;
-        private readonly string payload;
+        private readonly Position payload;
+        private readonly byte[] signature;
 
         public Action(
             long txNonce,
             Address signer, 
-            string payload
+            Position payload,
+            byte[] signature
         )
         {
             TxNonce = txNonce;
             Signer = signer;
             Payload = payload;
+            Signature = signature;
         }
 
         public long TxNonce
@@ -40,17 +42,24 @@ namespace PracticeBlockChain
             get;
         }
 
-        public string Payload
+        public Position Payload
+        {
+            get;
+        }
+
+        public byte[] Signature
         {
             get;
         }
 
         public byte[] Serialize()
         {
-            Dictionary<string, object> componentsToSerialize = new Dictionary<string, object>();
+            Dictionary<string, object> componentsToSerialize = 
+                new Dictionary<string, object>();
             componentsToSerialize.Add("txNonce", TxNonce);
             componentsToSerialize.Add("signer", Signer.AddressValue);
-            componentsToSerialize.Add("payload", Payload);
+            componentsToSerialize.Add("payload_x", Payload.X);
+            componentsToSerialize.Add("payload_y", Payload.Y);
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
