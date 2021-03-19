@@ -1,6 +1,4 @@
-﻿using PracticeBlockChain.TicTacToeGame;
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,29 +12,25 @@ namespace PracticeBlockChain
     [Serializable]
     public class Block
     {
-        // payload 자료형 변경 예정
         private readonly long index;
         private readonly byte[] previousHash;
         private readonly DateTimeOffset timeStamp;
         private readonly Nonce nonce;
-        private readonly byte[] signature;
-        private readonly string payload;
+        private readonly Action action;
 
         public Block(
             long index, 
             byte[] previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
-            byte[] signature,
-            string payload
+            Action action
         ) 
         {
             Index = index;
             PreviousHash = previousHash;
             TimeStamp = timeStamp;
             Nonce = nonce;
-            Signature = signature;
-            Payload = payload;      // this.payload = payload; 와 차이점..??
+            GetAction = action;
         }
 
         public long Index
@@ -59,22 +53,22 @@ namespace PracticeBlockChain
             get;
         }
 
-        public byte[] Signature
-        {
-            get;
-        }
-
-        public string Payload
+        public Action GetAction
         {
             get;
         }
 
         public byte[] Serialize()
         {
-            Dictionary<string, object> componentsToSerialize = new Dictionary<string, object>();
+            Dictionary<string, object> componentsToSerialize = 
+                new Dictionary<string, object>();
             if (!(PreviousHash is null))
             {
                 componentsToSerialize.Add("previousHash", PreviousHash);                
+            }
+            if (!(action is null))
+            {
+                componentsToSerialize.Add("signature", action.Signature);
             }
             componentsToSerialize.Add("nonce", Nonce.NonceValue);
             componentsToSerialize.Add("timeStamp", TimeStamp);
@@ -86,6 +80,8 @@ namespace PracticeBlockChain
 
         public byte[] Hash()
         {
+            // HashCash의 CalculateHash와의 차이점
+            // HashCash에서는 랜덤 nonce가 들어가지만, 여기서는 이 블록의 nonce가 들어간다
             SHA256 hashAlgo = SHA256.Create();
             var concatenated =
                 String.Join(
