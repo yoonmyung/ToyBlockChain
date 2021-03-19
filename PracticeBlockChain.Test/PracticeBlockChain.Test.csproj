@@ -5,11 +5,12 @@
 
     <IsPackable>false</IsPackable>
 
-    <StartupObject>PracticeBlockChain.Test.BlockChainTest</StartupObject>
+    <StartupObject>PracticeBlockChain.Test.TictactoeGameTest</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="AddressExtensionsTest.cs" />
+    <Compile Remove="BlockChainTest.cs" />
     <Compile Remove="CryptoTest.cs" />
     <Compile Remove="KeyTest.cs" />
   </ItemGroup>
