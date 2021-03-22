@@ -2,8 +2,8 @@
 {
     public class Position
     {
-        private readonly int x;
-        private readonly int y;
+        private readonly int _x;
+        private readonly int _y;
 
         public Position(int x, int y)
         {

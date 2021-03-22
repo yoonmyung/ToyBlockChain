@@ -64,7 +64,7 @@ namespace PracticeBlockChain.TicTacToeGame
                     )
                 )
                 {
-                    Console.WriteLine($"{board[0, 0]} 승리");
+                    Console.WriteLine($"{board[0, 0]} 승리!");
                     return true;
                 }
             }

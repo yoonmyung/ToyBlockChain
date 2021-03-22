@@ -6,8 +6,8 @@ namespace PracticeBlockChain
 {
     public static class DifficultyUpdater
     {
-        public static readonly long minimumDifficulty = 1024;
-        public static readonly long difficultyBoundDivisor = 128;
+        public static readonly long _minimumDifficulty = 1024;
+        public static readonly long _difficultyBoundDivisor = 128;
 
         public static long UpdateDifficulty(
             long difficulty,
@@ -21,13 +21,13 @@ namespace PracticeBlockChain
             TimeSpan timeInterval = currentTimeStamp - previouTimeStamp;
             const long minimumMultiplier = -99;
             var multiplier =
-                1 - (timeInterval.TotalMilliseconds / difficultyBoundDivisor);
+                1 - (timeInterval.TotalMilliseconds / _difficultyBoundDivisor);
             multiplier = Math.Max(multiplier, minimumMultiplier);
 
-            var offset = prevDifficulty / minimumDifficulty;
+            var offset = prevDifficulty / _minimumDifficulty;
             long nextDifficulty = 
                 Convert.ToInt64(prevDifficulty + (offset * multiplier));
-            nextDifficulty = Math.Max(nextDifficulty, minimumDifficulty);
+            nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
             return nextDifficulty;
         }
     }

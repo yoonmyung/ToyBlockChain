@@ -12,10 +12,10 @@ namespace PracticeBlockChain
     [Serializable]
     public class Action
     {
-        private readonly long txNonce;
-        private readonly Address signer;
-        private readonly Position payload;
-        private readonly byte[] signature;
+        private readonly long _txNonce;
+        private readonly Address _signer;
+        private readonly Position _payload;
+        private readonly byte[] _signature;
 
         public Action(
             long txNonce,

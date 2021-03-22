@@ -6,7 +6,7 @@ namespace PracticeBlockChain
 {
     public class Nonce
     {
-        private readonly byte[] nonceValue = null;
+        private readonly byte[] _nonceValue = null;
 
         public Nonce(byte[] nonceValue)
         {

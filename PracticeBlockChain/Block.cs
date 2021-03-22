@@ -12,11 +12,11 @@ namespace PracticeBlockChain
     [Serializable]
     public class Block
     {
-        private readonly long index;
-        private readonly byte[] previousHash;
-        private readonly DateTimeOffset timeStamp;
-        private readonly Nonce nonce;
-        private readonly Action action;
+        private readonly long _index;
+        private readonly byte[] _previousHash;
+        private readonly DateTimeOffset _timeStamp;
+        private readonly Nonce _nonce;
+        private readonly Action _action;
 
         public Block(
             long index, 
@@ -65,9 +65,9 @@ namespace PracticeBlockChain
             {
                 componentsToSerialize.Add("previousHash", PreviousHash);                
             }
-            if (!(action is null))
+            if (!(_action is null))
             {
-                componentsToSerialize.Add("signature", action.Signature);
+                componentsToSerialize.Add("signature", _action.Signature);
             }
             componentsToSerialize.Add("nonce", Nonce.NonceValue);
             componentsToSerialize.Add("timeStamp", TimeStamp);

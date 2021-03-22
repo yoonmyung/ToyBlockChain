@@ -9,8 +9,8 @@ namespace PracticeBlockChain.Cryptography
 {
     public class Address
     {
-        public const int Size = 20;
-        private readonly byte[] addressValue;
+        public const int _Size = 20;
+        private readonly byte[] _addressValue;
 
         public Address(PublicKey publicKey)
         {
@@ -35,7 +35,7 @@ namespace PracticeBlockChain.Cryptography
         {
             byte[] hashPayload = key.Format(false).Skip(1).ToArray();
             var output = CalculateHash(hashPayload);
-            return output.Skip(output.Length - Size).ToArray();
+            return output.Skip(output.Length - _Size).ToArray();
         }
     }
 }
