@@ -40,7 +40,7 @@ namespace PracticeBlockChain.Test
             // Print Genesis block.
             PrintBoard(board);
             PrintTipofBlock(blockChain);
-            var _isFirstplayerTurn = true;
+            var isFirstplayerTurn = true;
 
             while (!(StateController.IsEnd(board)))
             {
@@ -48,7 +48,7 @@ namespace PracticeBlockChain.Test
                 Position position = DecidePositiontoPut(
                     address: 
                     (
-                        _isFirstplayerTurn ? 
+                        isFirstplayerTurn ? 
                         firstPlayerAddress : secondPlayerAddress
                     ), 
                     txNonce: txNonce
@@ -69,15 +69,15 @@ namespace PracticeBlockChain.Test
                 // │
                 // ▼
                 // BlockChain
-                // Sign the action.
+                // Make an action without signature.
                 byte[] signature =
-                    (_isFirstplayerTurn ? firstPlayerPrivateKey : secondPlayerPrivateKey)
+                    (isFirstplayerTurn ? firstPlayerPrivateKey : secondPlayerPrivateKey)
                     .Sign(
                         new Action(
                             txNonce: txNonce, 
                             signer: 
                             (
-                                _isFirstplayerTurn ? 
+                                isFirstplayerTurn ? 
                                 firstPlayerAddress : secondPlayerAddress
                             ),
                             payload: position, 
@@ -85,26 +85,25 @@ namespace PracticeBlockChain.Test
                         )
                         .Hash()
                     );
-                // Verify the action. 
-                // Suppose that the player who isn't this turn 
-                // tries to verify the action of this turn player.
+                // Add a signature to an action.
                 Action action = 
                     new Action(
                         txNonce: txNonce, 
                         signer: 
                         (
-                            _isFirstplayerTurn ? 
+                            isFirstplayerTurn ? 
                             firstPlayerAddress : secondPlayerAddress
                         ), 
                         payload: position, 
                         signature: signature
                     );
+                // Verify an action. (Validation)
+                // 본래는 같은 네트워크 상에 있는 다른 노드들이 검증함
                 bool isValidAction =
-                    (_isFirstplayerTurn ? firstPlayerPublicKey : secondPlayerPublicKey)
+                    (isFirstplayerTurn ? firstPlayerPublicKey : secondPlayerPublicKey)
                     .Verify(action.Hash(), action.Signature);
                 Assert.True(isValidAction);
-
-                // Proof of work.
+                // 작업증명
                 Nonce nonce =
                     HashCash
                     .CalculateHash
@@ -112,9 +111,8 @@ namespace PracticeBlockChain.Test
                         previousBlock: blockChain.GetBlock(blockChain.HashofTipBlock),
                         blockChain: blockChain
                     );
-
-                // Need Validation.
-                // If pass the validation, make block (with executing action).
+                // 작업증명에 대한 검증 작업 필요 (Libplanet의 Policy)
+                // Make block with executing action.
                 Block block = new Block(
                     index: blockChain.GetBlock(blockChain.HashofTipBlock).Index + 1,
                     previousHash: blockChain.HashofTipBlock,
@@ -122,11 +120,11 @@ namespace PracticeBlockChain.Test
                     nonce: nonce,
                     action: action
                 );
-                // first "board" = next state, second "board" = current state.
+                // First "board" is the next state, 
+                // second "board" is the current state.
                 board = blockChain.AddBlock(block, board);
-                _isFirstplayerTurn = !(_isFirstplayerTurn);
-
-                //Print current block.
+                isFirstplayerTurn = !(isFirstplayerTurn);
+                //Print current state and the tip of block.
                 PrintBoard(board);
                 PrintTipofBlock(blockChain);
             }
