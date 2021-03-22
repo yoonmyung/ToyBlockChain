@@ -12,8 +12,7 @@ namespace PracticeBlockChain.TicTacToeGame
             Address address
         )
         {
-            string[,] updatedState = new string[3,3];
-            updatedState = currentState;
+            var updatedState = currentState;
             updatedState[position.X, position.Y] = 
                 AddressPlayerMappingAttribute.GetPlayer(address);
             return updatedState;
@@ -27,12 +26,15 @@ namespace PracticeBlockChain.TicTacToeGame
             {
                 return false;
             }
-            return true;
+            else
+            {
+                return true;
+            }
         }
 
         public static bool IsEnd(string[,] board)
         {
-            int countofFilledTuples = 0;
+            var countofFilledTuples = 0;
 
             foreach(string tuple in board)
             {

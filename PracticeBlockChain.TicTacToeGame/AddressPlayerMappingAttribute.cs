@@ -4,10 +4,13 @@ using System.Collections.Generic;
 
 namespace PracticeBlockChain.TicTacToeGame
 {
-    public class AddressPlayerMappingAttribute
+    public static class AddressPlayerMappingAttribute
     {
-        private static readonly Dictionary<Address, string> listofPlayers =
-            new Dictionary<Address, string>();
+        private static readonly Dictionary<Address, string> listofPlayers;
+
+        static AddressPlayerMappingAttribute() {
+            listofPlayers = new Dictionary<Address, string>();
+        }
 
         public static void AddPlayer(Address address, string playerName)
         {

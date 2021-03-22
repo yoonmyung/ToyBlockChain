@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
-//byte[]끼리 비교해야 하는 경우 아예 자료형을 만들어서 비교
+//byte[]끼리 비교해야 하는 경우 아예 이런 식으로 클래스를 만들어서 비교
 //libplanet/Libplanet.Stun/Stun/TurnClient.cs
 namespace PracticeBlockChain
 {
@@ -12,7 +10,7 @@ namespace PracticeBlockChain
     {
         public bool Equals(byte[] x, byte[] y)
         {
-            if (x == null || y == null)
+            if ((x == null) || (y == null))
             {
                 return x == y;
             }

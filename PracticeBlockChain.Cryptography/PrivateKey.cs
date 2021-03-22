@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.IO;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Asn1.X9;
@@ -11,7 +7,6 @@ using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Signers;
 using Org.BouncyCastle.Math;
-using Org.BouncyCastle.Math.EC;
 using Org.BouncyCastle.Security;
 using ECPoint = Org.BouncyCastle.Math.EC.ECPoint;
 
@@ -93,44 +88,6 @@ namespace PracticeBlockChain.Cryptography
             var _ = new PrivateKey(param).PublicKey;
 
             return param;
-        }
-
-        private ECPoint CalculatePoint(ECPublicKeyParameters pubKeyParams)
-        {
-            ECDomainParameters dp = KeyParam.Parameters;
-            if (!dp.Equals(pubKeyParams.Parameters))
-            {
-                throw new InvalidOperationException(
-                    "ECDH public key has wrong domain parameters"
-                );
-            }
-
-            BigInteger d = KeyParam.D;
-
-            ECPoint q = dp.Curve.DecodePoint(pubKeyParams.Q.GetEncoded(true));
-            if (q.IsInfinity)
-            {
-                throw new InvalidOperationException(
-                    "Infinity is not a valid public key for ECDH"
-                );
-            }
-
-            BigInteger h = dp.H;
-            if (!h.Equals(BigInteger.One))
-            {
-                d = dp.H.ModInverse(dp.N).Multiply(d).Mod(dp.N);
-                q = ECAlgorithms.ReferenceMultiply(q, h);
-            }
-
-            ECPoint p = q.Multiply(d).Normalize();
-            if (p.IsInfinity)
-            {
-                throw new InvalidOperationException(
-                    "Infinity is not a valid agreement value for ECDH"
-                );
-            }
-
-            return p;
         }
 
         public byte[] Sign(byte[] messageHash)

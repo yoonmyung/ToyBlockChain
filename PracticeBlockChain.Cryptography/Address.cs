@@ -35,7 +35,6 @@ namespace PracticeBlockChain.Cryptography
         {
             byte[] hashPayload = key.Format(false).Skip(1).ToArray();
             var output = CalculateHash(hashPayload);
-
             return output.Skip(output.Length - Size).ToArray();
         }
     }

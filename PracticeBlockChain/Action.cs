@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
-using System.Text;
 using PracticeBlockChain.TicTacToeGame;
 using PracticeBlockChain.Cryptography;
 using System.IO;
@@ -54,8 +52,7 @@ namespace PracticeBlockChain
 
         public byte[] Serialize()
         {
-            Dictionary<string, object> componentsToSerialize = 
-                new Dictionary<string, object>();
+            var componentsToSerialize = new Dictionary<string, object>();
             componentsToSerialize.Add("txNonce", TxNonce);
             componentsToSerialize.Add("signer", Signer.AddressValue);
             componentsToSerialize.Add("payload_x", Payload.X);
@@ -69,9 +66,9 @@ namespace PracticeBlockChain
         public byte[] Hash()
         {
             // Hash the action to sign.
-            SHA256 hashAlgo = SHA256.Create();
+            var hashAlgo = SHA256.Create();
             byte[] hashInput = Serialize();
-            BigInteger hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
+            var hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
             return hashDigest.ToByteArray();
         }
     }

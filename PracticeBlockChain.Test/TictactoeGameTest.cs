@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Xunit;
 using PracticeBlockChain.TicTacToeGame;
 using PracticeBlockChain.Cryptography;
@@ -11,17 +10,17 @@ namespace PracticeBlockChain.Test
     {
         public static void Main()
         {
-            long txNonce = 0;
-            long blockIndex = 1;
-            BlockChain blockChain = new BlockChain();
+            var txNonce = 0;
+            var blockIndex = 1;
+            var blockChain = new BlockChain();
 
             // Initialize board.
             string[,] board = InitializeBoard();
 
             // Set the first player.
-            PrivateKey firstPlayerPrivateKey = new PrivateKey();
-            PublicKey firstPlayerPublicKey = firstPlayerPrivateKey.PublicKey;
-            Address firstPlayerAddress = new Address(firstPlayerPublicKey);
+            var firstPlayerPrivateKey = new PrivateKey();
+            var firstPlayerPublicKey = firstPlayerPrivateKey.PublicKey;
+            var firstPlayerAddress = new Address(firstPlayerPublicKey);
             Assert.NotNull(firstPlayerAddress.AddressValue);
             AddressPlayerMappingAttribute.AddPlayer(
                 address: firstPlayerAddress, 
@@ -29,9 +28,9 @@ namespace PracticeBlockChain.Test
             );
 
             // Set the second player.
-            PrivateKey secondPlayerPrivateKey = new PrivateKey();
-            PublicKey secondPlayerPublicKey = secondPlayerPrivateKey.PublicKey;
-            Address secondPlayerAddress = new Address(secondPlayerPublicKey);
+            var secondPlayerPrivateKey = new PrivateKey();
+            var secondPlayerPublicKey = secondPlayerPrivateKey.PublicKey;
+            var secondPlayerAddress = new Address(secondPlayerPublicKey);
             Assert.NotNull(secondPlayerAddress.AddressValue);
             AddressPlayerMappingAttribute.AddPlayer(
                 address: secondPlayerAddress,
@@ -41,59 +40,75 @@ namespace PracticeBlockChain.Test
             // Print Genesis block.
             PrintBoard(board);
             PrintTipofBlock(blockChain);
+            var _isFirstplayerTurn = true;
 
-            bool isFirstplayerTurn = true;
-            while (!StateController.IsEnd(board))
+            while (!(StateController.IsEnd(board)))
             {
                 // Player
                 Position position = DecidePositiontoPut(
-                    (isFirstplayerTurn ? firstPlayerAddress : secondPlayerAddress), 
-                    txNonce
+                    address: 
+                    (
+                        _isFirstplayerTurn ? 
+                        firstPlayerAddress : secondPlayerAddress
+                    ), 
+                    txNonce: txNonce
                 );
-                if(position.X < 0 || position.X > 2 || position.Y < 0 || position.Y > 2
-                    || !StateController.IsAbletoPut(board, position))
+                if(
+                    (position.X < 0) 
+                    || (position.X > 2) 
+                    || (position.Y < 0) 
+                    || (position.Y > 2)
+                    || !(StateController.IsAbletoPut(board, position))
+                )
                 {
-                    Console.WriteLine(
-                        $"({position.X}, {position.Y})에 둘 수 없습니다"
-                    );
+                    Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
                     continue;
                 }
-                // l
-                // l   Player는 BlockChain에게 자신이 수행한 것을 전달
-                // l
+                // │
+                // │   Player는 BlockChain에게 자신이 수행한 것을 전달
+                // │
                 // ▼
                 // BlockChain
-                // Sign.
-                byte[] signature = 
-                    (isFirstplayerTurn? firstPlayerPrivateKey : secondPlayerPrivateKey)
+                // Sign the action.
+                byte[] signature =
+                    (_isFirstplayerTurn ? firstPlayerPrivateKey : secondPlayerPrivateKey)
                     .Sign(
                         new Action(
                             txNonce: txNonce, 
-                            signer:
-                            (isFirstplayerTurn? firstPlayerAddress : secondPlayerAddress),
+                            signer: 
+                            (
+                                _isFirstplayerTurn ? 
+                                firstPlayerAddress : secondPlayerAddress
+                            ),
                             payload: position, 
                             signature: null
-                        ).Hash()
+                        )
+                        .Hash()
                     );
-                // Verify. 
+                // Verify the action. 
                 // Suppose that the player who isn't this turn 
                 // tries to verify the action of this turn player.
                 Action action = 
                     new Action(
                         txNonce: txNonce, 
                         signer: 
-                        (isFirstplayerTurn? firstPlayerAddress : secondPlayerAddress), 
+                        (
+                            _isFirstplayerTurn ? 
+                            firstPlayerAddress : secondPlayerAddress
+                        ), 
                         payload: position, 
                         signature: signature
                     );
                 bool isValidAction =
-                    (isFirstplayerTurn? firstPlayerPublicKey : secondPlayerPublicKey)
+                    (_isFirstplayerTurn ? firstPlayerPublicKey : secondPlayerPublicKey)
                     .Verify(action.Hash(), action.Signature);
                 Assert.True(isValidAction);
 
                 // Proof of work.
                 Nonce nonce =
-                    HashCash.CalculateHash(
+                    HashCash
+                    .CalculateHash
+                    (
                         previousBlock: blockChain.GetBlock(blockChain.HashofTipBlock),
                         blockChain: blockChain
                     );
@@ -109,7 +124,7 @@ namespace PracticeBlockChain.Test
                 );
                 // first "board" = next state, second "board" = current state.
                 board = blockChain.AddBlock(block, board);
-                isFirstplayerTurn = !isFirstplayerTurn;
+                _isFirstplayerTurn = !(_isFirstplayerTurn);
 
                 //Print current block.
                 PrintBoard(board);
@@ -119,7 +134,7 @@ namespace PracticeBlockChain.Test
 
         private static string[,] InitializeBoard()
         {
-            string[,] board = new string[3, 3];
+            var board = new string[3, 3];
             for (var row = 0; row < 3; row++)
             {
                 for (var calmn = 0; calmn < 3; calmn++)
@@ -132,10 +147,10 @@ namespace PracticeBlockChain.Test
 
         private static Position DecidePositiontoPut(Address address, long txNonce)
         {
+            // Input "5 3" means player will put his tuple on the (5, 3).
             Console.Write(
                 $"{AddressPlayerMappingAttribute.GetPlayer(address)}이 이동할 위치 입력: "
             );
-            // Input "5 3" means player will put his tuple on the (5, 3).
             string[] input = Console.ReadLine().Split(' ');
             return new Position(int.Parse(input[0]), int.Parse(input[1]));
         }

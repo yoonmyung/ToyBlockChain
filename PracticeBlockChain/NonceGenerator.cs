@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PracticeBlockChain
 {
@@ -13,8 +11,8 @@ namespace PracticeBlockChain
 
         private Nonce MakeNewNonce()
         {
-            byte[] nonceBytes = new byte[10];
-            Random random = new Random();
+            var random = new Random();
+            var nonceBytes = new byte[10];
             random.NextBytes(nonceBytes);
 
             return new Nonce(nonceBytes);

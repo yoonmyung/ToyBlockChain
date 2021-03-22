@@ -13,12 +13,12 @@
 
         public int X
         {
-            get; set;
+            get;
         }
 
         public int Y
         {
-            get; set;
+            get;
         }
     }
 }

@@ -60,8 +60,7 @@ namespace PracticeBlockChain
 
         public byte[] Serialize()
         {
-            Dictionary<string, object> componentsToSerialize = 
-                new Dictionary<string, object>();
+            var componentsToSerialize = new Dictionary<string, object>();
             if (!(PreviousHash is null))
             {
                 componentsToSerialize.Add("previousHash", PreviousHash);                
@@ -82,15 +81,15 @@ namespace PracticeBlockChain
         {
             // HashCash의 CalculateHash와의 차이점
             // HashCash에서는 랜덤 nonce가 들어가지만, 여기서는 이 블록의 nonce가 들어간다
-            SHA256 hashAlgo = SHA256.Create();
+            var hashAlgo = SHA256.Create();
             var concatenated =
-                String.Join(
+                String.Join
+                (
                     "",
                     Serialize().Concat(Nonce.NonceValue).ToArray()
                 );
             var byteArray = Encoding.GetEncoding("iso-8859-1").GetBytes(concatenated);
-            BigInteger hashDigest = 
-                new BigInteger(hashAlgo.ComputeHash(byteArray));
+            var hashDigest = new BigInteger(hashAlgo.ComputeHash(byteArray));
             return hashDigest.ToByteArray();
         }
     }

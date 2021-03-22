@@ -1,9 +1,5 @@
-﻿using System;
-using System.Diagnostics.Contracts;
-using System.IO;
-using System.Security.Cryptography;
+﻿using System.IO;
 using Org.BouncyCastle.Asn1;
-using Org.BouncyCastle.Crypto.Digests;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Signers;
 

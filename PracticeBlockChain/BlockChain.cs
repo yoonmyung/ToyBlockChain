@@ -6,14 +6,14 @@ namespace PracticeBlockChain
 {
     public class BlockChain
     {
-        private readonly Dictionary<byte[], Block> blocks 
-            = new Dictionary<byte[], Block>();
+        private readonly Dictionary<byte[], Block> blocks;
         private byte[] hashofTipBlock;
         private readonly Block genesisBlock;
-        private readonly long difficulty = 0;
+        private long difficulty = 0;
 
         public BlockChain()
         {
+            blocks = new Dictionary<byte[], Block>();
             genesisBlock = MakeGenesisBlock();
         }
 
@@ -32,9 +32,10 @@ namespace PracticeBlockChain
 
         private Block MakeGenesisBlock()
         {
-            //빈 보드 상태
-            Block block =
-                new Block(
+            // Add an empty block.
+            var block =
+                new Block
+                (
                     index: 0,
                     previousHash: null,
                     timeStamp: DateTimeOffset.Now,
@@ -51,7 +52,6 @@ namespace PracticeBlockChain
             // After validate block, then add the block to the blockchain.
             this.hashofTipBlock = block.Hash();
             blocks.Add(HashofTipBlock, block);
-
             // Execute action.
             string[,] updatedBoard = 
                 StateController.Execute(
@@ -59,20 +59,27 @@ namespace PracticeBlockChain
                     position: block.GetAction.Payload, 
                     address: block.GetAction.Signer
                 ); 
-
             // Update Difficulty.
             if (block.PreviousHash is null)
             {
                 // It's a genesis block.
-                Difficulty = DifficultyUpdater.UpdateDifficulty(
-                    Difficulty, genesisBlock.TimeStamp, block.TimeStamp
-                );
+                Difficulty = 
+                    DifficultyUpdater.UpdateDifficulty
+                    (
+                        difficulty: Difficulty, 
+                        previouTimeStamp: genesisBlock.TimeStamp, 
+                        currentTimeStamp: block.TimeStamp
+                    );
             }
             else
             {
-                Difficulty = DifficultyUpdater.UpdateDifficulty(
-                    Difficulty, blocks[block.PreviousHash].TimeStamp, block.TimeStamp
-                );
+                Difficulty = 
+                    DifficultyUpdater.UpdateDifficulty
+                    (
+                        difficulty: Difficulty, 
+                        previouTimeStamp: blocks[block.PreviousHash].TimeStamp, 
+                        currentTimeStamp: block.TimeStamp
+                    );
             }
             return updatedBoard;
         }
@@ -81,7 +88,7 @@ namespace PracticeBlockChain
         {
             try
             {
-                Block returnedBlock = blocks[hashValue];
+                var returnedBlock = blocks[hashValue];
                 return returnedBlock;
             }
             catch (KeyNotFoundException exception)
@@ -96,7 +103,7 @@ namespace PracticeBlockChain
 
         public IEnumerable<Block> IterateBlock()
         {
-            foreach(Block block in blocks.Values)
+            foreach (Block block in blocks.Values)
             {
                 yield return block;
             }

@@ -8,7 +8,7 @@ namespace PracticeBlockChain
     {
         public static Nonce CalculateHash(Block previousBlock, BlockChain blockChain)
         {
-            SHA256 hashAlgo = SHA256.Create();
+            var hashAlgo = SHA256.Create();
             BigInteger hashDigest;
             Nonce nonce = null;
 
@@ -20,7 +20,8 @@ namespace PracticeBlockChain
                     .Concat(nonce.NonceValue)
                     .ToArray();
                 hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
-            } while(hashDigest < blockChain.Difficulty);
+            } 
+            while (hashDigest < blockChain.Difficulty);
 
             return nonce;
         }
