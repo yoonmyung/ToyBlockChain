@@ -9,12 +9,14 @@ namespace PracticeBlockChain
         private readonly Dictionary<byte[], Block> _blocks;
         private byte[] _hashofTipBlock;
         private readonly Block _genesisBlock;
-        private long _difficulty = 0;
+        private long _difficulty;
 
         public BlockChain()
         {
+            Random random = new Random();
             _blocks = new Dictionary<byte[], Block>();
             _genesisBlock = MakeGenesisBlock();
+            _difficulty = random.Next(10000);
         }
 
         public byte[] HashofTipBlock
@@ -27,7 +29,14 @@ namespace PracticeBlockChain
 
         public long Difficulty
         {
-            get; set;
+            get 
+            {
+                return this._difficulty;
+            }
+            set
+            {
+                this._difficulty = value;
+            }
         }
 
         private Block MakeGenesisBlock()
