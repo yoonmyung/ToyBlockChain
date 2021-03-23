@@ -68,6 +68,26 @@ namespace PracticeBlockChain.TicTacToeGame
                     return true;
                 }
             }
+            if (board[0, 2].Length > 0)
+            {
+                if (
+                    String.Equals(
+                        board[0, 2],
+                        board[1, 1],
+                        StringComparison.CurrentCulture
+                    )
+                    &&
+                    String.Equals(
+                        board[1, 1],
+                        board[2, 0],
+                        StringComparison.CurrentCulture
+                    )
+                )
+                {
+                    Console.WriteLine($"{board[0, 0]} 승리!");
+                    return true;
+                }
+            }
             for (var row = 0; row < 3; row++)
             {
                 if (board[row, 0].Length > 0)
