@@ -4,20 +4,8 @@ using System.Linq;
 
 namespace PracticeBlockChain.TicTacToeGame
 {
-    public static class StateController
+    public static class GameStateController
     {
-        public static string[,] Execute(
-            string[,] currentState,
-            Position position,
-            Address address
-        )
-        {
-            var updatedState = currentState;
-            updatedState[position.X, position.Y] = 
-                AddressPlayerMappingAttribute.GetPlayer(address);
-            return updatedState;
-        }
-
         public static bool IsAbletoPut(string[,] board, Position position)
         {
             // If IsAbletoPut() returns False, 
@@ -84,7 +72,7 @@ namespace PracticeBlockChain.TicTacToeGame
                     )
                 )
                 {
-                    Console.WriteLine($"{board[0, 0]} 승리!");
+                    Console.WriteLine($"{board[0, 2]} 승리!");
                     return true;
                 }
             }
