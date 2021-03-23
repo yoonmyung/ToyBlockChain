@@ -11,7 +11,6 @@ namespace PracticeBlockChain.Test
         public static void Main()
         {
             var txNonce = 0;
-            var blockIndex = 1;
             var blockChain = new BlockChain();
 
             // Initialize board.
@@ -219,7 +218,7 @@ namespace PracticeBlockChain.Test
             if (!(blockChain.GetBlock(blockChain.HashofTipBlock).GetAction is null))
             {
                 Debug.WriteLine(
-                    "Move to (" +
+                    "Put (" +
                     blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.Payload.X +
                     ", " +
                     blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.Payload.Y +
