@@ -1,5 +1,4 @@
 ﻿using PracticeBlockChain.Cryptography;
-using PracticeBlockChain.TicTacToeGame;
 using System;
 using System.Collections.Generic;
 
@@ -131,6 +130,24 @@ namespace PracticeBlockChain
         public string[,] GetCurrentState()
         {
             return _states[_states.Count - 1];
+        }
+
+        public long GetHowmanyBlocksMinermade(Address minerAddress)
+        {
+            var count = 0;
+            foreach(Block block in IterateBlock())
+            {
+                if (block.GetAction is null)
+                {
+                    continue;
+                }
+                Address address = block.GetAction.Signer;
+                if (address == minerAddress)
+                {
+                    count++;
+                }
+            }
+            return count;
         }
 
         public IEnumerable<Block> IterateBlock()

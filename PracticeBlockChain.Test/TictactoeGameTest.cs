@@ -11,7 +11,7 @@ namespace PracticeBlockChain.Test
         public static void Main()
         {
             // txNonce update 수정
-            var txNonce = 0;
+            // state 제네릭화
             var blockChain = new BlockChain();
 
             // Set the first player.
@@ -43,12 +43,10 @@ namespace PracticeBlockChain.Test
             {
                 // Player
                 Position position = DecidePositiontoPut(
-                    address: 
                     (
                         isFirstplayerTurn ? 
                         firstPlayerAddress : secondPlayerAddress
-                    ), 
-                    txNonce: txNonce
+                    )
                 );
                 if(
                     (position.X < 0) 
@@ -73,7 +71,14 @@ namespace PracticeBlockChain.Test
                     (isFirstplayerTurn ? firstPlayerPrivateKey : secondPlayerPrivateKey)
                     .Sign(
                         new Action(
-                            txNonce: txNonce, 
+                            txNonce: 
+                            blockChain.GetHowmanyBlocksMinermade
+                            (
+                                (
+                                    isFirstplayerTurn ?
+                                    firstPlayerAddress : secondPlayerAddress
+                                )
+                            ) + 1, 
                             signer: 
                             (
                                 isFirstplayerTurn ? 
@@ -87,7 +92,14 @@ namespace PracticeBlockChain.Test
                 // Add a signature to an action.
                 Action action = 
                     new Action(
-                        txNonce: txNonce, 
+                        txNonce:
+                        blockChain.GetHowmanyBlocksMinermade
+                        (
+                            (
+                                isFirstplayerTurn ?
+                                firstPlayerAddress : secondPlayerAddress
+                            )
+                        ) + 1,
                         signer: 
                         (
                             isFirstplayerTurn ? 
@@ -129,7 +141,7 @@ namespace PracticeBlockChain.Test
             }
         }
 
-        private static Position DecidePositiontoPut(Address address, long txNonce)
+        private static Position DecidePositiontoPut(Address address)
         {
             // Input "5 3" means player will put his tuple on the (5, 3).
             Console.Write(
@@ -211,6 +223,10 @@ namespace PracticeBlockChain.Test
                     ", " +
                     blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.Payload.Y +
                     ")"
+                );
+                Debug.Write("Action txNonce: ");
+                Debug.WriteLine(
+                    blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.TxNonce
                 );
             }
             else
