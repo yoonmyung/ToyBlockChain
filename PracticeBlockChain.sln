@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.Test", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.TicTacToeGame", "PracticeBlockChain.TicTacToeGame\PracticeBlockChain.TicTacToeGame.csproj", "{001269B4-6A88-4D27-B34B-3ABD20D65D61}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PracticeBlockChain.Cryptography", "PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj", "{B3FE2630-5DC4-4848-8646-13B006113B22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PracticeBlockChain.Cryptography", "PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj", "{B3FE2630-5DC4-4848-8646-13B006113B22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
