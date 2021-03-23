@@ -1,4 +1,5 @@
-﻿using PracticeBlockChain.TicTacToeGame;
+﻿using PracticeBlockChain.Cryptography;
+using PracticeBlockChain.TicTacToeGame;
 using System;
 using System.Collections.Generic;
 
@@ -7,6 +8,7 @@ namespace PracticeBlockChain
     public class BlockChain
     {
         private readonly Dictionary<byte[], Block> _blocks;
+        private readonly Dictionary<long, string[,]> _states;
         private byte[] _hashofTipBlock;
         private readonly Block _genesisBlock;
         private long _difficulty;
@@ -15,6 +17,7 @@ namespace PracticeBlockChain
         {
             Random random = new Random();
             _blocks = new Dictionary<byte[], Block>();
+            _states = new Dictionary<long, string[,]>();
             _genesisBlock = MakeGenesisBlock();
             _difficulty = random.Next(10000);
         }
@@ -53,23 +56,24 @@ namespace PracticeBlockChain
                 );
             this._hashofTipBlock = block.Hash();
             _blocks.Add(_hashofTipBlock, block);
+            InitializeBoard();
             return block;
         }
 
-        public string[,] AddBlock(Block block, string[,] currentBoard)
+        public void AddBlock(Block block)
         {
             // Validate block.
-
             // After validate block, then add the block to the blockchain.
             this._hashofTipBlock = block.Hash();
             _blocks.Add(HashofTipBlock, block);
             // Execute action.
             string[,] updatedBoard = 
-                StateController.Execute(
-                    currentState: currentBoard, 
+                block.GetAction.Execute(
+                    currentState: GetState(block.Index - 1), 
                     position: block.GetAction.Payload, 
                     address: block.GetAction.Signer
-                ); 
+                );
+            _states.Add(block.Index, updatedBoard);
             // Update Difficulty.
             if (block.PreviousHash is null)
             {
@@ -92,7 +96,6 @@ namespace PracticeBlockChain
                         currentTimeStamp: block.TimeStamp
                     );
             }
-            return updatedBoard;
         }
 
         public Block GetBlock(byte[] hashValue)
@@ -112,12 +115,43 @@ namespace PracticeBlockChain
             }
         }
 
+        public string[,] GetState(long blockIndex)
+        {
+            try
+            {
+                var returnedState = _states[blockIndex];
+                return returnedState;
+            }
+            catch (KeyNotFoundException exception)
+            {
+                return null;
+            }
+        }
+
+        public string[,] GetCurrentState()
+        {
+            return _states[_states.Count - 1];
+        }
+
         public IEnumerable<Block> IterateBlock()
         {
             foreach (Block block in _blocks.Values)
             {
                 yield return block;
             }
+        }
+
+        private void InitializeBoard()
+        {
+            var board = new string[3, 3];
+            for (var row = 0; row < 3; row++)
+            {
+                for (var calmn = 0; calmn < 3; calmn++)
+                {
+                    board[row, calmn] = "";
+                }
+            }
+            _states.Add(0, board);
         }
     }
 }

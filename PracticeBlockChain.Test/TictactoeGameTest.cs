@@ -10,11 +10,9 @@ namespace PracticeBlockChain.Test
     {
         public static void Main()
         {
+            // txNonce update 수정
             var txNonce = 0;
             var blockChain = new BlockChain();
-
-            // Initialize board.
-            string[,] board = InitializeBoard();
 
             // Set the first player.
             var firstPlayerPrivateKey = new PrivateKey();
@@ -37,11 +35,11 @@ namespace PracticeBlockChain.Test
             );
 
             // Print Genesis block.
-            PrintBoard(board);
+            PrintCurrentState(blockChain);
             PrintTipofBlock(blockChain);
             var isFirstplayerTurn = true;
 
-            while (!(StateController.IsEnd(board)))
+            while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
                 // Player
                 Position position = DecidePositiontoPut(
@@ -57,7 +55,9 @@ namespace PracticeBlockChain.Test
                     || (position.X > 2) 
                     || (position.Y < 0) 
                     || (position.Y > 2)
-                    || !(StateController.IsAbletoPut(board, position))
+                    || !(GameStateController
+                            .IsAbletoPut(blockChain.GetCurrentState(), position)
+                        )
                 )
                 {
                     Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
@@ -121,25 +121,12 @@ namespace PracticeBlockChain.Test
                 );
                 // First "board" is the next state, 
                 // second "board" is the current state.
-                board = blockChain.AddBlock(block, board);
+                blockChain.AddBlock(block);
                 isFirstplayerTurn = !(isFirstplayerTurn);
                 //Print current state and the tip of block.
-                PrintBoard(board);
+                PrintCurrentState(blockChain);
                 PrintTipofBlock(blockChain);
             }
-        }
-
-        private static string[,] InitializeBoard()
-        {
-            var board = new string[3, 3];
-            for (var row = 0; row < 3; row++)
-            {
-                for (var calmn = 0; calmn < 3; calmn++)
-                {
-                    board[row, calmn] = "";
-                }
-            }
-            return board;
         }
 
         private static Position DecidePositiontoPut(Address address, long txNonce)
@@ -152,17 +139,18 @@ namespace PracticeBlockChain.Test
             return new Position(int.Parse(input[0]), int.Parse(input[1]));
         }
 
-        private static void PrintBoard(string[,] board)
+        private static void PrintCurrentState(BlockChain blockChain)
         {
+            string[,] currentState = blockChain.GetCurrentState();
             Console.WriteLine();
             Console.WriteLine("---------------------------");
             for(var row = 0; row < 3; row++)
             {
                 for(var column = 0; column < 3; column++)
                 {
-                    if (board[row, column].Length > 0)
+                    if (currentState[row, column].Length > 0)
                     {
-                        Console.Write($"   {board[row, column]}   ");
+                        Console.Write($"   {currentState[row, column]}   ");
                     }
                     else
                     {

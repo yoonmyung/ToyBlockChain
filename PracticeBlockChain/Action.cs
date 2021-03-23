@@ -71,5 +71,17 @@ namespace PracticeBlockChain
             var hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
             return hashDigest.ToByteArray();
         }
+
+        public string[,] Execute(
+            string[,] currentState,
+            Position position,
+            Address address
+        )
+        {
+            var updatedState = currentState;
+            updatedState[position.X, position.Y] =
+                AddressPlayerMappingAttribute.GetPlayer(address);
+            return updatedState;
+        }
     }
 }
