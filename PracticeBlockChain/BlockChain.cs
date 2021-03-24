@@ -1,6 +1,9 @@
 ﻿using PracticeBlockChain.Cryptography;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace PracticeBlockChain
 {
@@ -11,6 +14,12 @@ namespace PracticeBlockChain
         private byte[] _hashofTipBlock;
         private readonly Block _genesisBlock;
         private long _difficulty;
+        private readonly string _blockStorage = 
+            "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\_BlockStorage";
+        private readonly string _actionStorage =
+            "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\_ActionStorage";
+        private readonly string _stateStorage =
+            "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\_StateStorage";
 
         public BlockChain()
         {
@@ -55,8 +64,24 @@ namespace PracticeBlockChain
                 );
             this._hashofTipBlock = block.Hash();
             _blocks.Add(_hashofTipBlock, block);
-            InitializeBoard();
+            InitializeState();
+//            StoreData(block);
+//            StoreData(block.GetAction);
+//            StoreData(GetCurrentState());
             return block;
+        }
+
+        private void InitializeState()
+        {
+            var board = new string[3, 3];
+            for (var row = 0; row < 3; row++)
+            {
+                for (var calmn = 0; calmn < 3; calmn++)
+                {
+                    board[row, calmn] = "";
+                }
+            }
+            AddState(0, board);
         }
 
         public void AddBlock(Block block)
@@ -72,7 +97,11 @@ namespace PracticeBlockChain
                     position: block.GetAction.Payload, 
                     address: block.GetAction.Signer
                 );
-            _states.Add(block.Index, updatedBoard);
+            AddState(block.Index, updatedBoard);
+            // Store current data.
+            StoreData(block);
+            StoreData(block.GetAction);
+            StoreData(GetCurrentState());
             // Update Difficulty.
             if (block.PreviousHash is null)
             {
@@ -114,6 +143,11 @@ namespace PracticeBlockChain
             }
         }
 
+        public void AddState(long blockIndex, string[,] state)
+        {
+            _states.Add(blockIndex, state);
+        }
+
         public string[,] GetState(long blockIndex)
         {
             try
@@ -130,6 +164,20 @@ namespace PracticeBlockChain
         public string[,] GetCurrentState()
         {
             return _states[_states.Count - 1];
+        }
+
+        private byte[] SerializeState()
+        {
+            var componentsToSerialize = new Dictionary<string, object>();
+            var index = 0;
+            foreach(string row in GetCurrentState())
+            {
+                componentsToSerialize.Add((index++) + "th row", row);
+            }
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            binFormatter.Serialize(mStream, componentsToSerialize);
+            return mStream.ToArray();
         }
 
         public long GetHowmanyBlocksMinermade(Address minerAddress)
@@ -158,17 +206,38 @@ namespace PracticeBlockChain
             }
         }
 
-        private void InitializeBoard()
+        public void StoreData(object data)
         {
-            var board = new string[3, 3];
-            for (var row = 0; row < 3; row++)
+            StreamWriter streamWriter;
+            if (data.GetType().Name == "Block")
             {
-                for (var calmn = 0; calmn < 3; calmn++)
-                {
-                    board[row, calmn] = "";
-                }
+                Block block = (Block)data;
+                streamWriter = 
+                    File.CreateText(
+                        @_blockStorage + "\\" + String.Join("", block.Hash()) + ".txt"
+                    );
+                streamWriter.WriteLine(String.Join("", block.SerializeForStorage()));
+                streamWriter.Close();
             }
-            _states.Add(0, board);
+            else if (data.GetType().Name == "Action")
+            {
+                Action action = (Action)data;
+                streamWriter = 
+                    File.CreateText(
+                        @_actionStorage + "\\" + String.Join("", action.ActionId) + ".txt"
+                    );
+                streamWriter.WriteLine(String.Join("", action.Serialize()));
+                streamWriter.Close();
+            }
+            else if (data.GetType().Name == "String[,]")
+            {
+                streamWriter =
+                    File.CreateText(
+                        @_stateStorage + "\\" + String.Join("", HashofTipBlock) + ".txt"
+                    );
+                streamWriter.WriteLine(String.Join("", SerializeState()));
+                streamWriter.Close();
+            }
         }
     }
 }
