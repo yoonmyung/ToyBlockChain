@@ -3,6 +3,8 @@ using Xunit;
 using PracticeBlockChain.TicTacToeGame;
 using PracticeBlockChain.Cryptography;
 using System.Diagnostics;
+using System.IO;
+using System.Collections.Generic;
 
 namespace PracticeBlockChain.Test
 {
@@ -10,8 +12,11 @@ namespace PracticeBlockChain.Test
     {
         public static void Main()
         {
-            // txNonce update 수정
             // state 제네릭화
+            // genesis block도 storage에 추가
+            // game 한 번 돌리고 나서 턴제 번호 입력하면 그 순서까지의 상태들과 블록들 보여주기
+            // Block Validation
+
             var blockChain = new BlockChain();
 
             // Set the first player.
@@ -35,8 +40,8 @@ namespace PracticeBlockChain.Test
             );
 
             // Print Genesis block.
-            PrintCurrentState(blockChain);
-            PrintTipofBlock(blockChain);
+//            PrintCurrentState(blockChain);
+//            PrintTipofBlock(blockChain);
             var isFirstplayerTurn = true;
 
             while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
@@ -153,89 +158,95 @@ namespace PracticeBlockChain.Test
 
         private static void PrintCurrentState(BlockChain blockChain)
         {
-            string[,] currentState = blockChain.GetCurrentState();
-            Console.WriteLine();
+            byte[] serializedState = 
+                File.ReadAllBytes(
+                    blockChain.StateStorage + "\\"
+                    + string.Join("", blockChain.HashofTipBlock) + ".txt"
+                );
+            Dictionary<int, string> currentState = 
+                (Dictionary<int, string>)blockChain.DeSerialize(serializedState);
             Console.WriteLine("---------------------------");
-            for(var row = 0; row < 3; row++)
+            foreach (int tuple in currentState.Keys)
             {
-                for(var column = 0; column < 3; column++)
+                Console.Write(
+                    "   " + 
+                    (currentState[tuple].Length == 0 ? "   " : currentState[tuple]) + 
+                    "   "
+                );
+                if (tuple % 3 == 0)
                 {
-                    if (currentState[row, column].Length > 0)
-                    {
-                        Console.Write($"   {currentState[row, column]}   ");
-                    }
-                    else
-                    {
-                        Console.Write($"         ");
-                    }
+                    Console.WriteLine("\n---------------------------");
                 }
-                Console.WriteLine("\n---------------------------\n");
             }
         }
 
         private static void PrintTipofBlock(BlockChain blockChain)
         {
+            byte[] serializedBlock =
+                File.ReadAllBytes(
+                    blockChain.BlockStorage + "\\"
+                    + string.Join("", blockChain.HashofTipBlock) + ".txt"
+                );
+            Dictionary<string, object> tipBlock =
+                (Dictionary<string, object>)blockChain.DeSerialize(serializedBlock);
             Debug.WriteLine("-----------------------------------------------");
-            Debug.Write("Block #");
-            Debug.WriteLine(blockChain.GetBlock(blockChain.HashofTipBlock).Index);
-            Debug.Write("Nonce: ");
-            try
+            foreach (string tuple in tipBlock.Keys)
             {
-                Debug.WriteLine(
-                    String.Join(
-                        " ",
-                        blockChain.GetBlock(blockChain.HashofTipBlock).Nonce.NonceValue
-                    )
-                );
-            } catch(Exception exception)
-            {
-                Debug.WriteLine("null");
+                Debug.Write(tuple + ": ");
+                try
+                {
+                    if (tipBlock[tuple].GetType().Name == "Byte[]")
+                    {
+                        byte[] byteArray = (byte[])tipBlock[tuple];
+                        Debug.WriteLine(string.Join("", byteArray));
+                    }
+                    else
+                    {
+                        Debug.WriteLine(tipBlock[tuple]);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.WriteLine("null");
+                }
             }
-            Debug.Write("Previous Hash: ");
-            if (!(blockChain.GetBlock(blockChain.HashofTipBlock).PreviousHash is null))
-            {
-                Debug.WriteLine(
-                    String.Join(
-                        " ", 
-                        blockChain.GetBlock(blockChain.HashofTipBlock).PreviousHash
-                    )
-                );
-            }
-            else
-            {
-                Debug.WriteLine("null");
-            }
-            Debug.Write("Current Hash: ");
-            Debug.WriteLine(
-                String.Join(
-                    " ", 
-                    blockChain.GetBlock(blockChain.HashofTipBlock).Hash()
-                )
-            );
-            Debug.Write("TimeStamp: ");
-            Debug.WriteLine(blockChain.GetBlock(blockChain.HashofTipBlock).TimeStamp);
-            Debug.Write("Action: ");
-            if (!(blockChain.GetBlock(blockChain.HashofTipBlock).GetAction is null))
-            {
-                Debug.WriteLine(
-                    "Put (" +
-                    blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.Payload.X +
-                    ", " +
-                    blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.Payload.Y +
-                    ")"
-                );
-                Debug.Write("Action txNonce: ");
-                Debug.WriteLine(
-                    blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.TxNonce
-                );
-            }
-            else
-            {
-                Debug.WriteLine("null");
-            }
-            Debug.Write("Difficulty: ");
-            Debug.WriteLine(blockChain.Difficulty);
+            PrintAction(blockChain);
             Debug.WriteLine("-----------------------------------------------");
+        }
+
+        private static void PrintAction(BlockChain blockChain)
+        {
+            byte[] serializedAction =
+                File.ReadAllBytes(
+                    blockChain.ActionStorage + "\\"
+                    + string.Join(
+                        "",
+                        blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.ActionId
+                      )
+                    + ".txt"
+                );
+            Dictionary<string, object> action =
+                (Dictionary<string, object>)blockChain.DeSerialize(serializedAction);
+            foreach (string tuple in action.Keys)
+            {
+                Debug.Write(tuple + ": ");
+                try
+                {
+                    if (action[tuple].GetType().Name == "Byte[]")
+                    {
+                        byte[] byteArray = (byte[])action[tuple];
+                        Debug.WriteLine(string.Join("", byteArray));
+                    }
+                    else
+                    {
+                        Debug.WriteLine(action[tuple]);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Debug.WriteLine("null");
+                }
+            }
         }
     }
 }
