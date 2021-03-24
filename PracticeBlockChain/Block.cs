@@ -77,6 +77,26 @@ namespace PracticeBlockChain
             return mStream.ToArray();
         }
 
+        public byte[] SerializeForStorage()
+        {
+            var componentsToSerialize = new Dictionary<string, object>();
+            componentsToSerialize.Add("index", Index);
+            if (!(PreviousHash is null))
+            {
+                componentsToSerialize.Add("previousHash", PreviousHash);
+            }
+            if (!(_action is null))
+            {
+                componentsToSerialize.Add("actionId", _action.ActionId);
+            }
+            componentsToSerialize.Add("nonce", Nonce.NonceValue);
+            componentsToSerialize.Add("timeStamp", TimeStamp);
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            binFormatter.Serialize(mStream, componentsToSerialize);
+            return mStream.ToArray();
+        }
+
         public byte[] Hash()
         {
             // HashCash의 CalculateHash와의 차이점
