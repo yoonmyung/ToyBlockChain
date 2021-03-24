@@ -1,8 +1,8 @@
 ﻿using PracticeBlockChain.Cryptography;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace PracticeBlockChain
@@ -15,11 +15,11 @@ namespace PracticeBlockChain
         private readonly Block _genesisBlock;
         private long _difficulty;
         private readonly string _blockStorage = 
-            "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\_BlockStorage";
+            "C:\\Users\\1229k\\Desktop\\Planetarium\\BlockChain\\_BlockStorage";
         private readonly string _actionStorage =
-            "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\_ActionStorage";
+            "C:\\Users\\1229k\\Desktop\\Planetarium\\BlockChain\\_ActionStorage";
         private readonly string _stateStorage =
-            "C:\\Users\\1229k\\Desktop\\인턴\\BlockChain\\_StateStorage";
+            "C:\\Users\\1229k\\Desktop\\Planetarium\\BlockChain\\_StateStorage";
 
         public BlockChain()
         {
@@ -47,6 +47,30 @@ namespace PracticeBlockChain
             set
             {
                 this._difficulty = value;
+            }
+        }
+
+        public string BlockStorage
+        {
+            get
+            {
+                return this._blockStorage;
+            }
+        }
+
+        public string ActionStorage
+        {
+            get
+            {
+                return this._actionStorage;
+            }
+        }
+
+        public string StateStorage
+        {
+            get
+            {
+                return this._stateStorage;
             }
         }
 
@@ -168,16 +192,17 @@ namespace PracticeBlockChain
 
         private byte[] SerializeState()
         {
-            var componentsToSerialize = new Dictionary<string, object>();
-            var index = 0;
-            foreach(string row in GetCurrentState())
+            var componentsToSerialize = new Dictionary<int, string>();
+            var index = 1;
+            foreach(string tuple in GetCurrentState())
             {
-                componentsToSerialize.Add((index++) + "th row", row);
+                componentsToSerialize.Add(index++, tuple);
             }
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
-            return mStream.ToArray();
+            byte[] result = Compress(mStream.ToArray());
+            return result;
         }
 
         public long GetHowmanyBlocksMinermade(Address minerAddress)
@@ -212,32 +237,77 @@ namespace PracticeBlockChain
             if (data.GetType().Name == "Block")
             {
                 Block block = (Block)data;
-                streamWriter = 
-                    File.CreateText(
-                        @_blockStorage + "\\" + String.Join("", block.Hash()) + ".txt"
-                    );
-                streamWriter.WriteLine(String.Join("", block.SerializeForStorage()));
-                streamWriter.Close();
+                File.WriteAllBytes(
+                    _blockStorage + "\\" + String.Join("", block.Hash()) + ".txt", 
+                    block.SerializeForStorage()
+                );
             }
             else if (data.GetType().Name == "Action")
             {
                 Action action = (Action)data;
-                streamWriter = 
-                    File.CreateText(
-                        @_actionStorage + "\\" + String.Join("", action.ActionId) + ".txt"
-                    );
-                streamWriter.WriteLine(String.Join("", action.Serialize()));
-                streamWriter.Close();
+                File.WriteAllBytes(
+                    _actionStorage + "\\" + String.Join("", action.ActionId) + ".txt",
+                    action.Serialize()
+                );
             }
             else if (data.GetType().Name == "String[,]")
             {
-                streamWriter =
-                    File.CreateText(
-                        @_stateStorage + "\\" + String.Join("", HashofTipBlock) + ".txt"
-                    );
-                streamWriter.WriteLine(String.Join("", SerializeState()));
-                streamWriter.Close();
+                File.WriteAllBytes(
+                    _stateStorage + "\\" + String.Join("", HashofTipBlock) + ".txt",
+                    SerializeState()
+                );
             }
+        }
+
+        public Object DeSerialize(byte[] arrBytes)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                var binaryFormatter = new BinaryFormatter();
+                var decompressed = Decompress(arrBytes);
+
+                memoryStream.Write(decompressed, 0, decompressed.Length);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+
+                return binaryFormatter.Deserialize(memoryStream);
+            }
+        }
+
+        public static byte[] Compress(byte[] input)
+        {
+            byte[] compressesData;
+
+            using (var outputStream = new MemoryStream())
+            {
+                using (var zip = new GZipStream(outputStream, CompressionMode.Compress))
+                {
+                    zip.Write(input, 0, input.Length);
+                }
+
+                compressesData = outputStream.ToArray();
+            }
+
+            return compressesData;
+        }
+
+        public static byte[] Decompress(byte[] input)
+        {
+            byte[] decompressedData;
+
+            using (var outputStream = new MemoryStream())
+            {
+                using (var inputStream = new MemoryStream(input))
+                {
+                    using (var zip = new GZipStream(inputStream, CompressionMode.Decompress))
+                    {
+                        zip.CopyTo(outputStream);
+                    }
+                }
+
+                decompressedData = outputStream.ToArray();
+            }
+
+            return decompressedData;
         }
     }
 }
