@@ -33,8 +33,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj" />
     <ProjectReference Include="..\PracticeBlockChain.TicTacToeGame\PracticeBlockChain.TicTacToeGame.csproj" />
-    <ProjectReference Include="..\practiceBlockchain\PracticeBlockChain.csproj" />
-    <ProjectReference Include="..\TicTacToe\PracticeBlockChain.Game.csproj" />
+    <ProjectReference Include="..\PracticeBlockchain\PracticeBlockChain.csproj" />
   </ItemGroup>
 
 </Project>
