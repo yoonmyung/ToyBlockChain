@@ -12,6 +12,7 @@ namespace PracticeBlockChain
     [Serializable]
     public class Action
     {
+        private readonly byte[] _actionId;
         private readonly long _txNonce;
         private readonly Address _signer;
         private readonly Position _payload;
@@ -28,6 +29,12 @@ namespace PracticeBlockChain
             Signer = signer;
             Payload = payload;
             Signature = signature;
+            ActionId = Hash();
+        }
+
+        public byte[] ActionId
+        {
+            get;
         }
 
         public long TxNonce
@@ -55,8 +62,11 @@ namespace PracticeBlockChain
             var componentsToSerialize = new Dictionary<string, object>();
             componentsToSerialize.Add("txNonce", TxNonce);
             componentsToSerialize.Add("signer", Signer.AddressValue);
-            componentsToSerialize.Add("payload_x", Payload.X);
-            componentsToSerialize.Add("payload_y", Payload.Y);
+            if (!(Payload is null))
+            {
+                componentsToSerialize.Add("payload_x", Payload.X);
+                componentsToSerialize.Add("payload_y", Payload.Y);
+            }
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
