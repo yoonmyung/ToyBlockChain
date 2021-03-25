@@ -14,12 +14,9 @@ namespace PracticeBlockChain
         private byte[] _hashofTipBlock;
         private readonly Block _genesisBlock;
         private long _difficulty;
-        private readonly string _blockStorage = 
-            "C:\\Users\\1229k\\Desktop\\Planetarium\\BlockChain\\_BlockStorage";
-        private readonly string _actionStorage =
-            "C:\\Users\\1229k\\Desktop\\Planetarium\\BlockChain\\_ActionStorage";
-        private readonly string _stateStorage =
-            "C:\\Users\\1229k\\Desktop\\Planetarium\\BlockChain\\_StateStorage";
+        private readonly string _blockStorage;
+        private readonly string _actionStorage;
+        private readonly string _stateStorage;
 
         public BlockChain()
         {
