@@ -65,9 +65,9 @@ namespace PracticeBlockChain
             {
                 componentsToSerialize.Add("previousHash", PreviousHash);                
             }
-            if (!(_action is null))
+            if (!(GetAction is null))
             {
-                componentsToSerialize.Add("signature", _action.Signature);
+                componentsToSerialize.Add("signature", GetAction.Signature);
             }
             componentsToSerialize.Add("nonce", Nonce.NonceValue);
             componentsToSerialize.Add("timeStamp", TimeStamp);
@@ -85,9 +85,17 @@ namespace PracticeBlockChain
             {
                 componentsToSerialize.Add("previousHash", PreviousHash);
             }
+            else
+            {
+                componentsToSerialize.Add("previousHash", null);
+            }
             if (!(GetAction is null))
             {
                 componentsToSerialize.Add("actionId", GetAction.ActionId);
+            }
+            else
+            {
+                componentsToSerialize.Add("actionId", null);
             }
             componentsToSerialize.Add("nonce", Nonce.NonceValue);
             componentsToSerialize.Add("timeStamp", TimeStamp);

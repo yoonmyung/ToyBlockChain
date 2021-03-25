@@ -67,6 +67,11 @@ namespace PracticeBlockChain
                 componentsToSerialize.Add("payload_x", Payload.X);
                 componentsToSerialize.Add("payload_y", Payload.Y);
             }
+            else
+            {
+                componentsToSerialize.Add("payload_x", null);
+                componentsToSerialize.Add("payload_y", null);
+            }
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
