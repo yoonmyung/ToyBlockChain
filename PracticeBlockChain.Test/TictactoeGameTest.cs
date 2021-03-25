@@ -13,8 +13,6 @@ namespace PracticeBlockChain.Test
         public static void Main()
         {
             // state 제네릭화
-            // genesis block도 storage에 추가
-            // game 한 번 돌리고 나서 턴제 번호 입력하면 그 순서까지의 상태들과 블록들 보여주기
             // Block Validation
 
             var blockChain = new BlockChain();
@@ -40,8 +38,8 @@ namespace PracticeBlockChain.Test
             );
 
             // Print Genesis block.
-//            PrintCurrentState(blockChain);
-//            PrintTipofBlock(blockChain);
+            PrintCurrentState(blockChain);
+            PrintTipofBlock(blockChain);
             var isFirstplayerTurn = true;
 
             while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
@@ -195,7 +193,12 @@ namespace PracticeBlockChain.Test
                 Debug.Write(tuple + ": ");
                 try
                 {
-                    if (tipBlock[tuple].GetType().Name == "Byte[]")
+                    if (tipBlock[tuple] is null)
+                    {
+                        // It's genesis block.
+                        Debug.WriteLine("null");
+                    }
+                    else if (tipBlock[tuple].GetType().Name == "Byte[]")
                     {
                         byte[] byteArray = (byte[])tipBlock[tuple];
                         Debug.WriteLine(string.Join("", byteArray));
@@ -232,7 +235,12 @@ namespace PracticeBlockChain.Test
                 Debug.Write(tuple + ": ");
                 try
                 {
-                    if (action[tuple].GetType().Name == "Byte[]")
+                    if (action[tuple] is null)
+                    {
+                        // It's genesis block.
+                        Debug.WriteLine("null");
+                    }
+                    else if (action[tuple].GetType().Name == "Byte[]")
                     {
                         byte[] byteArray = (byte[])action[tuple];
                         Debug.WriteLine(string.Join("", byteArray));
