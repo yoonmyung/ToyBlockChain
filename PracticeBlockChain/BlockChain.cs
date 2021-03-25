@@ -84,14 +84,20 @@ namespace PracticeBlockChain
                     previousHash: null,
                     timeStamp: DateTimeOffset.Now,
                     nonce: new NonceGenerator().GenerateNonce(),
-                    action: null
+                    action:
+                    new Action(
+                        txNonce: 0,
+                        signer: new Address(new PrivateKey().PublicKey),
+                        payload: null,
+                        signature: null
+                    )
                 );
             this._hashofTipBlock = block.Hash();
             _blocks.Add(_hashofTipBlock, block);
             InitializeState();
-//            StoreData(block);
-//            StoreData(block.GetAction);
-//            StoreData(GetCurrentState());
+            StoreData(block);
+            StoreData(block.GetAction);
+            StoreData(GetCurrentState());
             return block;
         }
 
