@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Text;
 using Xunit;
 
 namespace PracticeBlockChain.Test
@@ -13,7 +11,7 @@ namespace PracticeBlockChain.Test
         public static void StoringBlockTest()
         {
             BlockChain blockChain = new BlockChain();
-            var indexTofindBlock = 3;
+            var indexTofindBlock = 0;
             var directoryInfo = new DirectoryInfo(blockChain.BlockStorage);
             foreach (var file in directoryInfo.GetFiles())
             {
@@ -22,28 +20,23 @@ namespace PracticeBlockChain.Test
                     = (Dictionary<string, object>)blockChain.DeSerialize(serializedBlock);
                 if ((long)block["index"] == indexTofindBlock)
                 {
-                    Assert.Equal(block["index"], (long)3);
+                    Assert.Equal(block["index"], (long)0);
                     Assert.Equal
                     (
                         block["previousHash"],
-                        new byte[]
-                        {
-                            35, 0, 144, 168, 40, 203, 208, 148, 218,
-                            234, 232, 205, 114, 134, 147, 187, 36, 54,
-                            79, 188, 121, 222, 106, 166, 144, 221, 120, 188, 52, 134, 175, 61
-                        }
+                        null
                     );
                     Assert.Equal
                     (
                         block["nonce"],
-                        new byte[] { 38, 241, 76, 108, 183, 65, 66, 68, 188, 184 }
+                        new byte[] { 179, 34, 184, 195, 60, 46, 201, 167, 171, 237 }
                     );
                     Assert.Equal
                     (
                         block["timeStamp"],
                         new DateTimeOffset
                         (
-                            new DateTime(2021, 03, 25, 11, 39, 16) + TimeSpan.FromSeconds(0.0205552)
+                            new DateTime(2021, 03, 25, 17, 38, 1) + TimeSpan.FromSeconds(0.1832255)
                         )
                     );
                     break;
@@ -55,7 +48,7 @@ namespace PracticeBlockChain.Test
         public static void StoringActionTest()
         {
             BlockChain blockChain = new BlockChain();
-            var indexTofindBlock = 3;
+            var indexTofindBlock = 0;
             var directoryInfo = new DirectoryInfo(blockChain.BlockStorage);
             object idTofindAction = null;
             foreach (var file in directoryInfo.GetFiles())
@@ -71,9 +64,10 @@ namespace PracticeBlockChain.Test
                         idTofindAction,
                         new byte[]
                         {
-                            125, 66, 96, 37, 71, 109, 113, 237, 53, 27,
-                            244, 149, 204, 72, 183, 243, 113, 220, 107,
-                            225, 242, 154, 114, 91, 79, 101, 100, 58, 126, 87, 42, 123
+                            57, 79, 79, 66, 27, 212, 39, 150,
+                            38, 84, 40, 209, 232, 217, 192, 129,
+                            141, 132, 33, 195, 168, 191, 249, 46,
+                            52, 123, 84, 195, 133, 124, 195, 7
                         }
                     );
                     break;
@@ -84,25 +78,26 @@ namespace PracticeBlockChain.Test
                 File.ReadAllBytes(blockChain.ActionStorage + "\\" + string.Join("", actionId) + ".txt");
             Dictionary<string, object> action
                 = (Dictionary<string, object>)blockChain.DeSerialize(serializedAction);
-            Assert.Equal(action["txNonce"], (long)2);
+            Assert.Equal(action["txNonce"], (long)0);
             Assert.Equal
             (
                 action["signer"],
                 new byte[]
                 {
-                    92, 14, 124, 217, 39, 104, 85, 160, 35,
-                    214, 106, 90, 85, 253, 86, 50, 13, 37, 197, 211
+                    116, 51, 244, 149, 150, 239, 184, 168,
+                    60, 135, 8, 52, 29, 131, 123, 76,
+                    245, 132, 86, 37
                 }
             );
-            Assert.Equal(action["payload_x"], 0);
-            Assert.Equal(action["payload_y"], 0);
+            Assert.Equal(action["payload_x"], null);
+            Assert.Equal(action["payload_y"], null);
         }
 
         [Fact]
         public static void StoringStateTest()
         {
             BlockChain blockChain = new BlockChain();
-            var indexTofindBlock = 3;
+            var indexTofindBlock = 0;
             var directoryInfo = new DirectoryInfo(blockChain.BlockStorage);
             var countOfBlock = 
                 Directory.GetFiles(blockChain.BlockStorage, "*", SearchOption.AllDirectories).Length;
@@ -122,14 +117,14 @@ namespace PracticeBlockChain.Test
                 File.ReadAllBytes(blockChain.StateStorage + "\\" + hashTofindState);
             Dictionary<int, string> state
                 = (Dictionary<int, string>)blockChain.DeSerialize(serializedState);
-            Assert.Equal(state[1], "Kim");
+            Assert.Equal(state[1], "");
             Assert.Equal(state[2], "");
             Assert.Equal(state[3], "");
             Assert.Equal(state[4], "");
-            Assert.Equal(state[5], "Kim");
+            Assert.Equal(state[5], "");
             Assert.Equal(state[6], "");
             Assert.Equal(state[7], "");
-            Assert.Equal(state[8], "Lee");
+            Assert.Equal(state[8], "");
             Assert.Equal(state[9], "");
         }
     }
