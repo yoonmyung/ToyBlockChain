@@ -12,10 +12,11 @@ namespace PracticeBlockChain.Test
     {
         public static void Main()
         {
-            // state 제네릭화
-            // Block Validation
+            // state 제네릭화 (보류)
+            // Block Validation 추가
 
             var blockChain = new BlockChain();
+            blockChain.SetGenesisBlock();
 
             // Set the first player.
             var firstPlayerPrivateKey = new PrivateKey();
@@ -26,7 +27,6 @@ namespace PracticeBlockChain.Test
                 address: firstPlayerAddress, 
                 playerName: "Kim"
             );
-
             // Set the second player.
             var secondPlayerPrivateKey = new PrivateKey();
             var secondPlayerPublicKey = secondPlayerPrivateKey.PublicKey;
@@ -36,12 +36,11 @@ namespace PracticeBlockChain.Test
                 address: secondPlayerAddress,
                 playerName: "Lee"
             );
+            var isFirstplayerTurn = true;
 
             // Print Genesis block.
             PrintCurrentState(blockChain);
             PrintTipofBlock(blockChain);
-            var isFirstplayerTurn = true;
-
             while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
                 // Player
@@ -52,13 +51,13 @@ namespace PracticeBlockChain.Test
                     )
                 );
                 if(
-                    (position.X < 0) 
-                    || (position.X > 2) 
-                    || (position.Y < 0) 
-                    || (position.Y > 2)
-                    || !(GameStateController
-                            .IsAbletoPut(blockChain.GetCurrentState(), position)
-                        )
+                    (position.X < 0) || 
+                    (position.X > 2) || 
+                    (position.Y < 0) ||
+                    (position.Y > 2) ||
+                    !(GameStateController
+                        .IsAbletoPut(blockChain.GetCurrentState(), position)
+                    )
                 )
                 {
                     Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
@@ -134,8 +133,6 @@ namespace PracticeBlockChain.Test
                     nonce: nonce,
                     action: action
                 );
-                // First "board" is the next state, 
-                // second "board" is the current state.
                 blockChain.AddBlock(block);
                 isFirstplayerTurn = !(isFirstplayerTurn);
                 //Print current state and the tip of block.
@@ -157,12 +154,10 @@ namespace PracticeBlockChain.Test
         private static void PrintCurrentState(BlockChain blockChain)
         {
             byte[] serializedState = 
-                File.ReadAllBytes(
-                    blockChain.StateStorage + "\\"
-                    + string.Join("", blockChain.HashofTipBlock) + ".txt"
-                );
+                GetObjectFromStorage(blockChain, blockChain.HashofTipBlock);
             Dictionary<int, string> currentState = 
-                (Dictionary<int, string>)blockChain.DeSerialize(serializedState);
+                (Dictionary<int, string>)
+                ByteArrayConverter.DeSerialize(serializedState);
             Console.WriteLine("---------------------------");
             foreach (int tuple in currentState.Keys)
             {
@@ -180,13 +175,11 @@ namespace PracticeBlockChain.Test
 
         private static void PrintTipofBlock(BlockChain blockChain)
         {
-            byte[] serializedBlock =
-                File.ReadAllBytes(
-                    blockChain.BlockStorage + "\\"
-                    + string.Join("", blockChain.HashofTipBlock) + ".txt"
-                );
+            byte[] serializedBlock = 
+                GetObjectFromStorage(blockChain, blockChain.HashofTipBlock);
             Dictionary<string, object> tipBlock =
-                (Dictionary<string, object>)blockChain.DeSerialize(serializedBlock);
+                (Dictionary<string, object>)
+                ByteArrayConverter.DeSerialize(serializedBlock);
             Debug.WriteLine("-----------------------------------------------");
             foreach (string tuple in tipBlock.Keys)
             {
@@ -219,17 +212,15 @@ namespace PracticeBlockChain.Test
 
         private static void PrintAction(BlockChain blockChain)
         {
-            byte[] serializedAction =
-                File.ReadAllBytes(
-                    blockChain.ActionStorage + "\\"
-                    + string.Join(
-                        "",
-                        blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.ActionId
-                      )
-                    + ".txt"
+            byte[] serializedAction = 
+                GetObjectFromStorage
+                (
+                    blockChain, 
+                    blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.ActionId
                 );
             Dictionary<string, object> action =
-                (Dictionary<string, object>)blockChain.DeSerialize(serializedAction);
+                (Dictionary<string, object>)
+                ByteArrayConverter.DeSerialize(serializedAction);
             foreach (string tuple in action.Keys)
             {
                 Debug.Write(tuple + ": ");
@@ -255,6 +246,16 @@ namespace PracticeBlockChain.Test
                     Debug.WriteLine("null");
                 }
             }
+        }
+
+        public static byte[] GetObjectFromStorage
+            (BlockChain blockChain, byte[] hashValue)
+        {
+            return File.ReadAllBytes(
+                blockChain.ActionStorage + "\\"
+                + string.Join("", hashValue)
+                + ".txt"
+            );
         }
     }
 }
