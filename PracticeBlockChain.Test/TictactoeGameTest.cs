@@ -154,7 +154,7 @@ namespace PracticeBlockChain.Test
         private static void PrintCurrentState(BlockChain blockChain)
         {
             byte[] serializedState = 
-                GetObjectFromStorage(blockChain, blockChain.HashofTipBlock);
+                GetObjectFromStorage(blockChain.StateStorage, blockChain.HashofTipBlock);
             Dictionary<int, string> currentState = 
                 (Dictionary<int, string>)
                 ByteArrayConverter.DeSerialize(serializedState);
@@ -176,7 +176,7 @@ namespace PracticeBlockChain.Test
         private static void PrintTipofBlock(BlockChain blockChain)
         {
             byte[] serializedBlock = 
-                GetObjectFromStorage(blockChain, blockChain.HashofTipBlock);
+                GetObjectFromStorage(blockChain.BlockStorage, blockChain.HashofTipBlock);
             Dictionary<string, object> tipBlock =
                 (Dictionary<string, object>)
                 ByteArrayConverter.DeSerialize(serializedBlock);
@@ -215,7 +215,7 @@ namespace PracticeBlockChain.Test
             byte[] serializedAction = 
                 GetObjectFromStorage
                 (
-                    blockChain, 
+                    blockChain.ActionStorage, 
                     blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.ActionId
                 );
             Dictionary<string, object> action =
@@ -249,12 +249,10 @@ namespace PracticeBlockChain.Test
         }
 
         public static byte[] GetObjectFromStorage
-            (BlockChain blockChain, byte[] hashValue)
+            (string storageAddress, byte[] hashValue)
         {
             return File.ReadAllBytes(
-                blockChain.ActionStorage + "\\"
-                + string.Join("", hashValue)
-                + ".txt"
+                storageAddress + "\\" + string.Join("", hashValue) + ".txt"
             );
         }
     }
