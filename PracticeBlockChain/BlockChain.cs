@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Runtime.Serialization.Formatters.Binary;
 
 namespace PracticeBlockChain
@@ -12,7 +11,7 @@ namespace PracticeBlockChain
         private readonly Dictionary<byte[], Block> _blocks;
         private readonly Dictionary<long, string[,]> _states;
         private byte[] _hashofTipBlock;
-        private readonly Block _genesisBlock;
+        private Block _genesisBlock;
         private long _difficulty;
         private readonly string _blockStorage;
         private readonly string _actionStorage;
@@ -23,7 +22,6 @@ namespace PracticeBlockChain
             Random random = new Random();
             _blocks = new Dictionary<byte[], Block>();
             _states = new Dictionary<long, string[,]>();
-            _genesisBlock = MakeGenesisBlock();
             _difficulty = random.Next(10000);
         }
 
@@ -51,7 +49,7 @@ namespace PracticeBlockChain
         {
             get
             {
-                return this._blockStorage;
+                return _blockStorage;
             }
         }
 
@@ -59,7 +57,7 @@ namespace PracticeBlockChain
         {
             get
             {
-                return this._actionStorage;
+                return _actionStorage;
             }
         }
 
@@ -67,14 +65,14 @@ namespace PracticeBlockChain
         {
             get
             {
-                return this._stateStorage;
+                return _stateStorage;
             }
         }
 
-        private Block MakeGenesisBlock()
+        public void SetGenesisBlock()
         {
             // Add an empty block.
-            var block =
+            _genesisBlock =
                 new Block
                 (
                     index: 0,
@@ -89,13 +87,12 @@ namespace PracticeBlockChain
                         signature: null
                     )
                 );
-            this._hashofTipBlock = block.Hash();
-            _blocks.Add(_hashofTipBlock, block);
+            this._hashofTipBlock = _genesisBlock.Hash();
+            _blocks.Add(_hashofTipBlock, _genesisBlock);
             InitializeState();
-            StoreData(block);
-            StoreData(block.GetAction);
+            StoreData(_genesisBlock);
+            StoreData(_genesisBlock.GetAction);
             StoreData(GetCurrentState());
-            return block;
         }
 
         private void InitializeState()
@@ -109,6 +106,31 @@ namespace PracticeBlockChain
                 }
             }
             AddState(0, board);
+        }
+
+        private void UpdateDifficulty(Block block)
+        {
+            if (block.PreviousHash is null)
+            {
+                // It's a genesis block.
+                Difficulty =
+                    DifficultyUpdater.UpdateDifficulty
+                    (
+                        difficulty: Difficulty,
+                        previouTimeStamp: _genesisBlock.TimeStamp,
+                        currentTimeStamp: block.TimeStamp
+                    );
+            }
+            else
+            {
+                Difficulty =
+                    DifficultyUpdater.UpdateDifficulty
+                    (
+                        difficulty: Difficulty,
+                        previouTimeStamp: _blocks[block.PreviousHash].TimeStamp,
+                        currentTimeStamp: block.TimeStamp
+                    );
+            }
         }
 
         public void AddBlock(Block block)
@@ -130,27 +152,7 @@ namespace PracticeBlockChain
             StoreData(block.GetAction);
             StoreData(GetCurrentState());
             // Update Difficulty.
-            if (block.PreviousHash is null)
-            {
-                // It's a genesis block.
-                Difficulty = 
-                    DifficultyUpdater.UpdateDifficulty
-                    (
-                        difficulty: Difficulty, 
-                        previouTimeStamp: _genesisBlock.TimeStamp, 
-                        currentTimeStamp: block.TimeStamp
-                    );
-            }
-            else
-            {
-                Difficulty = 
-                    DifficultyUpdater.UpdateDifficulty
-                    (
-                        difficulty: Difficulty, 
-                        previouTimeStamp: _blocks[block.PreviousHash].TimeStamp, 
-                        currentTimeStamp: block.TimeStamp
-                    );
-            }
+            UpdateDifficulty(block);
         }
 
         public Block GetBlock(byte[] hashValue)
@@ -204,7 +206,7 @@ namespace PracticeBlockChain
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
-            byte[] result = Compress(mStream.ToArray());
+            byte[] result = ByteArrayConverter.Compress(mStream.ToArray());
             return result;
         }
 
@@ -237,9 +239,11 @@ namespace PracticeBlockChain
         public void StoreData(object data)
         {
             StreamWriter streamWriter;
+
             if (data.GetType().Name == "Block")
             {
                 Block block = (Block)data;
+
                 File.WriteAllBytes(
                     _blockStorage + "\\" + String.Join("", block.Hash()) + ".txt", 
                     block.SerializeForStorage()
@@ -248,6 +252,7 @@ namespace PracticeBlockChain
             else if (data.GetType().Name == "Action")
             {
                 Action action = (Action)data;
+
                 File.WriteAllBytes(
                     _actionStorage + "\\" + String.Join("", action.ActionId) + ".txt",
                     action.Serialize()
@@ -260,57 +265,6 @@ namespace PracticeBlockChain
                     SerializeState()
                 );
             }
-        }
-
-        public Object DeSerialize(byte[] arrBytes)
-        {
-            using (var memoryStream = new MemoryStream())
-            {
-                var binaryFormatter = new BinaryFormatter();
-                var decompressed = Decompress(arrBytes);
-
-                memoryStream.Write(decompressed, 0, decompressed.Length);
-                memoryStream.Seek(0, SeekOrigin.Begin);
-
-                return binaryFormatter.Deserialize(memoryStream);
-            }
-        }
-
-        public static byte[] Compress(byte[] input)
-        {
-            byte[] compressesData;
-
-            using (var outputStream = new MemoryStream())
-            {
-                using (var zip = new GZipStream(outputStream, CompressionMode.Compress))
-                {
-                    zip.Write(input, 0, input.Length);
-                }
-
-                compressesData = outputStream.ToArray();
-            }
-
-            return compressesData;
-        }
-
-        public static byte[] Decompress(byte[] input)
-        {
-            byte[] decompressedData;
-
-            using (var outputStream = new MemoryStream())
-            {
-                using (var inputStream = new MemoryStream(input))
-                {
-                    using (var zip = new GZipStream(inputStream, CompressionMode.Decompress))
-                    {
-                        zip.CopyTo(outputStream);
-                    }
-                }
-
-                decompressedData = outputStream.ToArray();
-            }
-
-            return decompressedData;
         }
     }
 }
