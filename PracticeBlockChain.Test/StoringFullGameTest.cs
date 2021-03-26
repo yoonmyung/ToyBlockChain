@@ -42,6 +42,7 @@ namespace PracticeBlockChain.Test
                 Dictionary<int, string> state = 
                     (Dictionary<int, string>)
                     ByteArrayConverter.DeSerialize(serializedState);
+                Debug.WriteLine($"{index}번째 턴");
                 Debug.WriteLine("---------------------------");
                 foreach (int tuple in state.Keys)
                 {
@@ -53,9 +54,10 @@ namespace PracticeBlockChain.Test
                     );
                     if (tuple % 3 == 0)
                     {
-                        Debug.WriteLine("\n---------------------------\n");
+                        Debug.WriteLine("\n---------------------------");
                     }
                 }
+                Debug.WriteLine("");
             }
         }
     }
