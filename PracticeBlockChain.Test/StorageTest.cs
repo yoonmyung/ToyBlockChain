@@ -7,17 +7,20 @@ namespace PracticeBlockChain.Test
 {
     public static class StorageTest
     {
+        public static BlockChain blockChain = new BlockChain();
+
         [Fact]
         public static void StoringBlockTest()
         {
-            BlockChain blockChain = new BlockChain();
             var indexTofindBlock = 0;
             var directoryInfo = new DirectoryInfo(blockChain.BlockStorage);
             foreach (var file in directoryInfo.GetFiles())
             {
-                byte[] serializedBlock = File.ReadAllBytes(blockChain.BlockStorage + "\\" + file.Name);
-                Dictionary<string, object> block
-                    = (Dictionary<string, object>)blockChain.DeSerialize(serializedBlock);
+                byte[] serializedBlock = 
+                    File.ReadAllBytes(blockChain.BlockStorage + "\\" + file.Name);
+                Dictionary<string, object> block = 
+                    (Dictionary<string, object>)
+                    ByteArrayConverter.DeSerialize(serializedBlock);
                 if ((long)block["index"] == indexTofindBlock)
                 {
                     Assert.Equal(block["index"], (long)0);
@@ -36,7 +39,8 @@ namespace PracticeBlockChain.Test
                         block["timeStamp"],
                         new DateTimeOffset
                         (
-                            new DateTime(2021, 03, 25, 17, 38, 1) + TimeSpan.FromSeconds(0.1832255)
+                            new DateTime(2021, 03, 25, 17, 38, 1) 
+                            + TimeSpan.FromSeconds(0.1832255)
                         )
                     );
                     break;
@@ -47,15 +51,16 @@ namespace PracticeBlockChain.Test
         [Fact]
         public static void StoringActionTest()
         {
-            BlockChain blockChain = new BlockChain();
             var indexTofindBlock = 0;
             var directoryInfo = new DirectoryInfo(blockChain.BlockStorage);
             object idTofindAction = null;
             foreach (var file in directoryInfo.GetFiles())
             {
-                byte[] serializedBlock = File.ReadAllBytes(blockChain.BlockStorage + "\\" + file.Name);
-                Dictionary<string, object> block
-                    = (Dictionary<string, object>)blockChain.DeSerialize(serializedBlock);
+                byte[] serializedBlock = 
+                    File.ReadAllBytes(blockChain.BlockStorage + "\\" + file.Name);
+                Dictionary<string, object> block =
+                    (Dictionary<string, object>)
+                    ByteArrayConverter.DeSerialize(serializedBlock);
                 if ((long)block["index"] == indexTofindBlock)
                 {
                     idTofindAction = block["actionId"];
@@ -75,9 +80,13 @@ namespace PracticeBlockChain.Test
             }
             byte[] actionId = (byte[])idTofindAction;
             byte[] serializedAction =
-                File.ReadAllBytes(blockChain.ActionStorage + "\\" + string.Join("", actionId) + ".txt");
-            Dictionary<string, object> action
-                = (Dictionary<string, object>)blockChain.DeSerialize(serializedAction);
+                File.ReadAllBytes
+                (
+                    blockChain.ActionStorage + "\\" + string.Join("", actionId) + ".txt"
+                );
+            Dictionary<string, object> action =
+                (Dictionary<string, object>)
+                ByteArrayConverter.DeSerialize(serializedAction);
             Assert.Equal(action["txNonce"], (long)0);
             Assert.Equal
             (
@@ -96,17 +105,21 @@ namespace PracticeBlockChain.Test
         [Fact]
         public static void StoringStateTest()
         {
-            BlockChain blockChain = new BlockChain();
             var indexTofindBlock = 0;
             var directoryInfo = new DirectoryInfo(blockChain.BlockStorage);
             var countOfBlock = 
-                Directory.GetFiles(blockChain.BlockStorage, "*", SearchOption.AllDirectories).Length;
+                Directory.GetFiles
+                (
+                    blockChain.BlockStorage, "*", SearchOption.AllDirectories
+                ).Length;
             object hashTofindState = null;
             foreach (var file in directoryInfo.GetFiles())
             {
-                byte[] serializedBlock = File.ReadAllBytes(blockChain.BlockStorage + "\\" + file.Name);
-                Dictionary<string, object> block
-                    = (Dictionary<string, object>)blockChain.DeSerialize(serializedBlock);
+                byte[] serializedBlock 
+                    = File.ReadAllBytes(blockChain.BlockStorage + "\\" + file.Name);
+                Dictionary<string, object> block = 
+                    (Dictionary<string, object>)
+                    ByteArrayConverter.DeSerialize(serializedBlock);
                 if ((long)block["index"] == indexTofindBlock)
                 {
                     hashTofindState = file.Name;
@@ -115,8 +128,9 @@ namespace PracticeBlockChain.Test
             }
             byte[] serializedState = 
                 File.ReadAllBytes(blockChain.StateStorage + "\\" + hashTofindState);
-            Dictionary<int, string> state
-                = (Dictionary<int, string>)blockChain.DeSerialize(serializedState);
+            Dictionary<int, string> state = 
+                (Dictionary<int, string>)
+                ByteArrayConverter.DeSerialize(serializedState);
             Assert.Equal(state[1], "");
             Assert.Equal(state[2], "");
             Assert.Equal(state[3], "");

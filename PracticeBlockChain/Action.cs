@@ -75,7 +75,7 @@ namespace PracticeBlockChain
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
-            return BlockChain.Compress(mStream.ToArray());
+            return ByteArrayConverter.Compress(mStream.ToArray());
         }
 
         public byte[] Hash()
