@@ -17,6 +17,11 @@ namespace PracticeBlockChain.Cryptography
             AddressValue = DeriveAddress(publicKey);
         }
 
+        public Address(byte[] addressValue)
+        {
+            AddressValue = addressValue;
+        }
+
         public byte[] AddressValue
         {
             get;
