@@ -58,29 +58,10 @@ namespace PracticeBlockChain
             get;
         }
 
-        public byte[] Serialize()
+        private Dictionary<string, object> ComposeTuplesToSerialize()
         {
             var componentsToSerialize = new Dictionary<string, object>();
-            if (!(PreviousHash is null))
-            {
-                componentsToSerialize.Add("previousHash", PreviousHash);                
-            }
-            if (!(GetAction is null))
-            {
-                componentsToSerialize.Add("signature", GetAction.Signature);
-            }
-            componentsToSerialize.Add("nonce", Nonce.NonceValue);
-            componentsToSerialize.Add("timeStamp", TimeStamp);
-            var binFormatter = new BinaryFormatter();
-            var mStream = new MemoryStream();
-            binFormatter.Serialize(mStream, componentsToSerialize);
-            return ByteArrayConverter.Compress(mStream.ToArray());
-        }
-
-        public byte[] SerializeForStorage()
-        {
-            var componentsToSerialize = new Dictionary<string, object>();
-            componentsToSerialize.Add("index", Index);
+            
             if (!(PreviousHash is null))
             {
                 componentsToSerialize.Add("previousHash", PreviousHash);
@@ -89,6 +70,34 @@ namespace PracticeBlockChain
             {
                 componentsToSerialize.Add("previousHash", null);
             }
+            componentsToSerialize.Add("nonce", Nonce.NonceValue);
+            componentsToSerialize.Add("timeStamp", TimeStamp);
+
+            return componentsToSerialize;
+        }
+
+        public byte[] Serialize()
+        {
+            Dictionary<string, object> componentsToSerialize = ComposeTuplesToSerialize();
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+
+            if (!(GetAction is null))
+            {
+                componentsToSerialize.Add("signature", GetAction.Signature);
+            }
+            binFormatter.Serialize(mStream, componentsToSerialize);
+
+            return ByteArrayConverter.Compress(mStream.ToArray());
+        }
+
+        public byte[] SerializeForStorage()
+        {
+            Dictionary<string, object> componentsToSerialize = ComposeTuplesToSerialize();
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+
+            componentsToSerialize.Add("index", Index);
             if (!(GetAction is null))
             {
                 componentsToSerialize.Add("actionId", GetAction.ActionId);
@@ -97,10 +106,6 @@ namespace PracticeBlockChain
             {
                 componentsToSerialize.Add("actionId", null);
             }
-            componentsToSerialize.Add("nonce", Nonce.NonceValue);
-            componentsToSerialize.Add("timeStamp", TimeStamp);
-            var binFormatter = new BinaryFormatter();
-            var mStream = new MemoryStream();
             binFormatter.Serialize(mStream, componentsToSerialize);
             return ByteArrayConverter.Compress(mStream.ToArray());
         }
