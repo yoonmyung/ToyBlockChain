@@ -57,9 +57,10 @@ namespace PracticeBlockChain
             get;
         }
 
-        public byte[] Serialize()
+        private Dictionary<string, object> ComposeTuplesToSerialize()
         {
             var componentsToSerialize = new Dictionary<string, object>();
+
             componentsToSerialize.Add("txNonce", TxNonce);
             componentsToSerialize.Add("signer", Signer.AddressValue);
             if (!(Payload is null))
@@ -72,9 +73,30 @@ namespace PracticeBlockChain
                 componentsToSerialize.Add("payload_x", null);
                 componentsToSerialize.Add("payload_y", null);
             }
+
+            return componentsToSerialize;
+        }
+
+        public byte[] Serialize()
+        {
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
+            var componentsToSerialize = ComposeTuplesToSerialize();
+
             binFormatter.Serialize(mStream, componentsToSerialize);
+
+            return ByteArrayConverter.Compress(mStream.ToArray());
+        }
+
+        public byte[] SerializeForStorage()
+        {
+            var binFormatter = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            var componentsToSerialize = ComposeTuplesToSerialize();
+
+            componentsToSerialize.Add("signature", Signature);
+            binFormatter.Serialize(mStream, componentsToSerialize);
+
             return ByteArrayConverter.Compress(mStream.ToArray());
         }
 
