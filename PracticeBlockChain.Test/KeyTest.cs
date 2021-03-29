@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using PracticeBlockChain.Cryptography;
 using Xunit;
 
 namespace PracticeBlockChain.Test

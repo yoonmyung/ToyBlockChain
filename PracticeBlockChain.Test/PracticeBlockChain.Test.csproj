@@ -9,10 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="AddressExtensionsTest.cs" />
     <Compile Remove="BlockChainTest.cs" />
     <Compile Remove="CryptoTest.cs" />
-    <Compile Remove="KeyTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
