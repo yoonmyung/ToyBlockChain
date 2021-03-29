@@ -12,11 +12,8 @@ namespace PracticeBlockChain.Test
     {
         public static void Main()
         {
-            // state 제네릭화 (보류)
-            // Block Validation 추가
-
             var blockChain = new BlockChain();
-            blockChain.SetGenesisBlock();
+            blockChain.LoadGenesisBlock();
 
             // Set the first player.
             var firstPlayerPrivateKey = new PrivateKey();
@@ -153,23 +150,20 @@ namespace PracticeBlockChain.Test
 
         private static void PrintCurrentState(BlockChain blockChain)
         {
-            byte[] serializedState = 
-                GetObjectFromStorage(blockChain.StateStorage, blockChain.HashofTipBlock);
-            Dictionary<int, string> currentState = 
-                (Dictionary<int, string>)
-                ByteArrayConverter.DeSerialize(serializedState);
+            string[,] currentState = blockChain.GetCurrentState();
             Console.WriteLine("---------------------------");
-            foreach (int tuple in currentState.Keys)
+            for (var row = 0; row < 3; row++)
             {
-                Console.Write(
-                    "   " + 
-                    (currentState[tuple].Length == 0 ? "   " : currentState[tuple]) + 
-                    "   "
-                );
-                if (tuple % 3 == 0)
+                for (var column = 0; column < 3; column++)
                 {
-                    Console.WriteLine("\n---------------------------");
+                    Console.Write(
+                        "   " +
+                        (currentState[row, column].Length == 0 ? 
+                            "   " : currentState[row, column]) +
+                        "   "
+                    );
                 }
+                Console.WriteLine("\n---------------------------");
             }
         }
 
@@ -194,7 +188,7 @@ namespace PracticeBlockChain.Test
                     else if (tipBlock[tuple].GetType().Name == "Byte[]")
                     {
                         byte[] byteArray = (byte[])tipBlock[tuple];
-                        Debug.WriteLine(string.Join("", byteArray));
+                        Debug.WriteLine(string.Join("-", byteArray));
                     }
                     else
                     {
@@ -234,7 +228,7 @@ namespace PracticeBlockChain.Test
                     else if (action[tuple].GetType().Name == "Byte[]")
                     {
                         byte[] byteArray = (byte[])action[tuple];
-                        Debug.WriteLine(string.Join("", byteArray));
+                        Debug.WriteLine(string.Join("-", byteArray));
                     }
                     else
                     {
@@ -252,7 +246,7 @@ namespace PracticeBlockChain.Test
             (string storageAddress, byte[] hashValue)
         {
             return File.ReadAllBytes(
-                storageAddress + "\\" + string.Join("", hashValue) + ".txt"
+                Path.Combine(storageAddress, string.Join("-", hashValue) + ".txt")
             );
         }
     }
