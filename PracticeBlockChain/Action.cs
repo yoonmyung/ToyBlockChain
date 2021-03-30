@@ -110,14 +110,19 @@ namespace PracticeBlockChain
         }
 
         public string[,] Execute(
-            string[,] currentState,
+            BlockChain blockChain,
             Position position,
             Address address
         )
         {
-            var updatedState = currentState;
-            updatedState[position.X, position.Y] =
-                AddressPlayerMappingAttribute.GetPlayer(address);
+            string[,] updatedState = blockChain.GetCurrentState();
+
+            if (GameStateController.IsAbletoPut(updatedState, position))
+            {
+                updatedState[position.X, position.Y] =
+                    AddressPlayerMappingAttribute.GetPlayer(address);
+            }
+
             return updatedState;
         }
     }
