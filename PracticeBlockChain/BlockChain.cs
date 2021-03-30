@@ -9,12 +9,13 @@ namespace PracticeBlockChain
 {
     public class BlockChain
     {
-        private byte[] _hashofTipBlock;
+        private Block _tipBlock;
         private Block _genesisBlock;
         private long _difficulty;
         private readonly string _blockStorage;
         private readonly string _actionStorage;
         private readonly string _stateStorage;
+        private readonly string _privateKeyStorage;
 
         public BlockChain()
         {
@@ -22,23 +23,23 @@ namespace PracticeBlockChain
             _difficulty = random.Next(10000);
         }
 
-        public byte[] HashofTipBlock
-        {
-            get
-            {
-                return this._hashofTipBlock;
-            }
-        }
-
         public long Difficulty
         {
             get 
             {
-                return this._difficulty;
+                return _difficulty;
             }
             set
             {
-                this._difficulty = value;
+                _difficulty = value;
+            }
+        }
+
+        public Block TipBlock
+        {
+            get
+            {
+                return _tipBlock;
             }
         }
 
@@ -66,6 +67,14 @@ namespace PracticeBlockChain
             }
         }
 
+        public string PrivateKeyStorage
+        {
+            get
+            {
+                return _privateKeyStorage;
+            }
+        }
+
         private void SetGenesisBlock()
         {
             // Add an empty block.
@@ -84,11 +93,11 @@ namespace PracticeBlockChain
                         signature: null
                     )
                 );
-            this._hashofTipBlock = _genesisBlock.Hash();
+            _tipBlock = _genesisBlock;
             InitializeState();
             File.WriteAllBytes
             (
-                Path.Combine(BlockStorage, String.Join("-", _hashofTipBlock) + ".txt"),
+                Path.Combine(BlockStorage, String.Join("-", _genesisBlock.Hash()) + ".txt"),
                 _genesisBlock.SerializeForStorage()
             );
             File.WriteAllBytes
@@ -102,7 +111,7 @@ namespace PracticeBlockChain
             );
         }
 
-        public void LoadGenesisBlock()
+        public void LoadTipBlock()
         {
             var directoryInfo = new DirectoryInfo(BlockStorage);
             var numberofStoredGameStates = directoryInfo.GetFiles().Length;
@@ -116,13 +125,16 @@ namespace PracticeBlockChain
             foreach (var file in directoryInfo.GetFiles())
             {
                 Block block = LoadBlockFromStorage(file.Name);
-                if (block.Index > indexofTipBlock)
+                if (block.Index == 0)
+                {
+                    _genesisBlock = block;
+                }
+                else if (block.Index > indexofTipBlock)
                 {
                     indexofTipBlock = block.Index;
                 }
             }
-            _genesisBlock = GetBlock(indexofTipBlock);
-            this._hashofTipBlock = _genesisBlock.Hash();
+            _tipBlock = GetBlock(indexofTipBlock);
         }
 
         private Block LoadBlockFromStorage(string file)
@@ -192,7 +204,7 @@ namespace PracticeBlockChain
             }
             File.WriteAllBytes
             (
-                Path.Combine(StateStorage, String.Join("-", HashofTipBlock) + ".txt"),
+                Path.Combine(StateStorage, String.Join("-", _genesisBlock.Hash()) + ".txt"),
                 SerializeState(board)
             );
         }
@@ -222,21 +234,42 @@ namespace PracticeBlockChain
             }
         }
 
-        public void AddBlock(Block block)
+        private void UpdateTip()
+        {
+            var directoryInfo = new DirectoryInfo(BlockStorage);
+            long tipIndex = 0;
+            Block block = null;
+
+            foreach (var file in directoryInfo.GetFiles())
+            {
+                block = LoadBlockFromStorage(file.Name);
+                if (block.Index > tipIndex)
+                {
+                    tipIndex = block.Index;
+                    _tipBlock = block;
+                }
+            }
+        }
+
+        public bool AddBlock(Block block)
         {
             // Validate block.
             // After validate block, then execute action with adding a block.
             string[,] updatedBoard = 
-                block.GetAction.Execute(
-                    currentState: GetCurrentState(), 
+                block.GetAction.Execute
+                (
+                    blockChain: this, 
                     position: block.GetAction.Payload, 
                     address: block.GetAction.Signer
                 );
-            this._hashofTipBlock = block.Hash();
+            if (isNotStateChange(GetCurrentState(), updatedBoard))
+            {
+                return false;
+            }
             // Store current data.
             File.WriteAllBytes
             (
-                Path.Combine(BlockStorage, String.Join("-", _hashofTipBlock) + ".txt"),
+                Path.Combine(BlockStorage, String.Join("-", block.Hash()) + ".txt"),
                 block.SerializeForStorage()
             );
             File.WriteAllBytes
@@ -250,11 +283,27 @@ namespace PracticeBlockChain
             );
             File.WriteAllBytes
             (
-                Path.Combine(StateStorage, String.Join("-", _hashofTipBlock) + ".txt"),
+                Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
                 SerializeState(updatedBoard)
             );
-            // Update Difficulty.
+            UpdateTip();
             UpdateDifficulty(block);
+            Directory.SetCurrentDirectory(BlockStorage);
+            Directory.SetCurrentDirectory(ActionStorage);
+            Directory.SetCurrentDirectory(StateStorage);
+
+            return true;
+        }
+
+        private bool isNotStateChange(string[,] currentBoard, string[,] updatedBoard)
+        {
+            var isNotChange = 
+                currentBoard.Rank == updatedBoard.Rank &&
+                Enumerable.Range(0, currentBoard.Rank).All(dimension => currentBoard.GetLength(dimension) 
+                == updatedBoard.GetLength(dimension)) &&
+                currentBoard.Cast<string>().SequenceEqual(updatedBoard.Cast<string>());
+
+            return isNotChange;
         }
 
         public Block GetBlock(long blockIndex)
@@ -322,7 +371,7 @@ namespace PracticeBlockChain
                 byte[] hashofBlock =
                     Path.GetFileNameWithoutExtension(file.Name).Split("-")
                     .Select(x => Convert.ToByte(x)).ToArray();
-                if (hashofBlock.SequenceEqual(HashofTipBlock))
+                if (hashofBlock.SequenceEqual(TipBlock.Hash()))
                 {
                     byte[] serializedState =
                         File.ReadAllBytes(Path.Combine(StateStorage, file.Name));
@@ -356,7 +405,7 @@ namespace PracticeBlockChain
                     continue;
                 }
                 Address address = block.GetAction.Signer;
-                if (address == minerAddress)
+                if (address.AddressValue.SequenceEqual(minerAddress.AddressValue))
                 {
                     count++;
                 }
