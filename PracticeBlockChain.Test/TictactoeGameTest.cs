@@ -1,154 +1,120 @@
 ﻿using System;
-using Xunit;
 using PracticeBlockChain.TicTacToeGame;
 using PracticeBlockChain.Cryptography;
 using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PracticeBlockChain.Test
 {
-    public class TictactoeGameTest
+    public static class TictactoeGameTest
     {
-        public static void Main()
+        public static void Main(string[] args)
         {
             var blockChain = new BlockChain();
-            blockChain.LoadGenesisBlock();
+            var privateKey =
+                new PrivateKey(Path.GetFileNameWithoutExtension(args[0]).Split("-")
+                .Select(x => Convert.ToByte(x)).ToArray());
+            var publicKey = privateKey.PublicKey;
+            var playerAddress = new Address(publicKey);
 
-            // Set the first player.
-            var firstPlayerPrivateKey = new PrivateKey();
-            var firstPlayerPublicKey = firstPlayerPrivateKey.PublicKey;
-            var firstPlayerAddress = new Address(firstPlayerPublicKey);
-            Assert.NotNull(firstPlayerAddress.AddressValue);
-            AddressPlayerMappingAttribute.AddPlayer(
-                address: firstPlayerAddress, 
-                playerName: "Kim"
-            );
-            // Set the second player.
-            var secondPlayerPrivateKey = new PrivateKey();
-            var secondPlayerPublicKey = secondPlayerPrivateKey.PublicKey;
-            var secondPlayerAddress = new Address(secondPlayerPublicKey);
-            Assert.NotNull(secondPlayerAddress.AddressValue);
-            AddressPlayerMappingAttribute.AddPlayer(
-                address: secondPlayerAddress,
-                playerName: "Lee"
-            );
-            var isFirstplayerTurn = true;
+            if (args[0] ==
+                "134-160-127-193-238-72-55-180-4-150-254-223-49-225-182-115-90-" +
+                "145-24-243-74-208-79-219-28-33-84-51-34-12-194-213"
+            )
+            {
+                AddressPlayerMappingAttribute.AddPlayer(
+                    address: playerAddress,
+                    playerName: "Kim"
+                );
+            }
+            else if (args[0] ==
+                "175-146-93-29-240-159-132-41-122-119-133-215-9-143-204-204-216-" +
+                "105-204-145-162-194-222-88-164-69-249-1-25-48-215-29"
+            )
+            {
+                AddressPlayerMappingAttribute.AddPlayer(
+                    address: playerAddress,
+                    playerName: "Lee"
+                );
+            }
 
-            // Print Genesis block.
-            PrintCurrentState(blockChain);
-            PrintTipofBlock(blockChain);
+            blockChain.LoadTipBlock();
+            FileWatcher.RunWatcher(blockChain);
             while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
+                PrintCurrentState(blockChain);
+                PrintTipofBlock(blockChain);
                 // Player
-                Position position = DecidePositiontoPut(
-                    (
-                        isFirstplayerTurn ? 
-                        firstPlayerAddress : secondPlayerAddress
-                    )
-                );
-                if(
-                    (position.X < 0) || 
-                    (position.X > 2) || 
-                    (position.Y < 0) ||
-                    (position.Y > 2) ||
-                    !(GameStateController
-                        .IsAbletoPut(blockChain.GetCurrentState(), position)
-                    )
-                )
-                {
-                    Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
-                    continue;
-                }
+                Position position = DecidePositiontoPut(playerAddress);
                 // │
                 // │   Player는 BlockChain에게 자신이 수행한 것을 전달
                 // │
                 // ▼
                 // BlockChain
                 // Make an action without signature.
-                byte[] signature =
-                    (isFirstplayerTurn ? firstPlayerPrivateKey : secondPlayerPrivateKey)
-                    .Sign(
-                        new Action(
-                            txNonce: 
-                            blockChain.GetHowmanyBlocksMinermade
-                            (
-                                (
-                                    isFirstplayerTurn ?
-                                    firstPlayerAddress : secondPlayerAddress
-                                )
-                            ) + 1, 
-                            signer: 
-                            (
-                                isFirstplayerTurn ? 
-                                firstPlayerAddress : secondPlayerAddress
-                            ),
+                byte[] signature = 
+                    privateKey.Sign
+                    (
+                        new Action
+                        (
+                            txNonce: blockChain.GetHowmanyBlocksMinermade(playerAddress) + 1, 
+                            signer: playerAddress,
                             payload: position, 
                             signature: null
-                        )
-                        .Hash()
+                        ).Hash()
                     );
                 // Add a signature to an action.
                 Action action = 
-                    new Action(
+                    new Action
+                    (
                         txNonce:
-                        blockChain.GetHowmanyBlocksMinermade
-                        (
-                            (
-                                isFirstplayerTurn ?
-                                firstPlayerAddress : secondPlayerAddress
-                            )
-                        ) + 1,
-                        signer: 
-                        (
-                            isFirstplayerTurn ? 
-                            firstPlayerAddress : secondPlayerAddress
-                        ), 
+                        blockChain.GetHowmanyBlocksMinermade(playerAddress) + 1,
+                        signer: playerAddress, 
                         payload: position, 
                         signature: signature
                     );
                 // Verify an action. (Validation)
                 // 본래는 같은 네트워크 상에 있는 다른 노드들이 검증함
-                bool isValidAction =
-                    (isFirstplayerTurn ? firstPlayerPublicKey : secondPlayerPublicKey)
-                    .Verify(action.Hash(), action.Signature);
-                Assert.True(isValidAction);
+                bool isValidAction = publicKey.Verify(action.Hash(), action.Signature);
                 // 작업증명
                 Nonce nonce =
-                    HashCash
-                    .CalculateHash
+                    HashCash.CalculateHash
                     (
-                        previousBlock: blockChain.GetBlock(blockChain.HashofTipBlock),
+                        previousBlock: blockChain.GetBlock(blockChain.TipBlock.Hash()),
                         blockChain: blockChain
                     );
                 // 작업증명에 대한 검증 작업 필요 (Libplanet의 Policy)
                 // Make block with executing action.
-                Block block = new Block(
-                    index: blockChain.GetBlock(blockChain.HashofTipBlock).Index + 1,
-                    previousHash: blockChain.HashofTipBlock,
-                    timeStamp: DateTimeOffset.Now,
-                    nonce: nonce,
-                    action: action
-                );
-                blockChain.AddBlock(block);
-                isFirstplayerTurn = !(isFirstplayerTurn);
-                //Print current state and the tip of block.
-                PrintCurrentState(blockChain);
-                PrintTipofBlock(blockChain);
+                Block block = 
+                    new Block
+                    (
+                        index: blockChain.TipBlock.Index + 1,
+                        previousHash: blockChain.TipBlock.Hash(),
+                        timeStamp: DateTimeOffset.Now,
+                        nonce: nonce,
+                        action: action
+                    );
+                if (!(blockChain.AddBlock(block)))
+                {
+                    Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
+                    continue;
+                }
             }
+            PrintCurrentState(blockChain);
+            PrintTipofBlock(blockChain);
         }
 
         private static Position DecidePositiontoPut(Address address)
         {
             // Input "5 3" means player will put his tuple on the (5, 3).
-            Console.Write(
-                $"{AddressPlayerMappingAttribute.GetPlayer(address)}이 이동할 위치 입력: "
-            );
+            Console.Write($"{AddressPlayerMappingAttribute.GetPlayer(address)} 이동할 위치 입력: ");
             string[] input = Console.ReadLine().Split(' ');
             return new Position(int.Parse(input[0]), int.Parse(input[1]));
         }
 
-        private static void PrintCurrentState(BlockChain blockChain)
+        public static void PrintCurrentState(BlockChain blockChain)
         {
             string[,] currentState = blockChain.GetCurrentState();
             Console.WriteLine("---------------------------");
@@ -170,38 +136,38 @@ namespace PracticeBlockChain.Test
         private static void PrintTipofBlock(BlockChain blockChain)
         {
             byte[] serializedBlock = 
-                GetObjectFromStorage(blockChain.BlockStorage, blockChain.HashofTipBlock);
+                GetObjectFromStorage(blockChain.BlockStorage, blockChain.TipBlock.Hash());
             Dictionary<string, object> tipBlock =
                 (Dictionary<string, object>)
                 ByteArrayConverter.DeSerialize(serializedBlock);
-            Debug.WriteLine("-----------------------------------------------");
+            Console.WriteLine("-----------------------------------------------");
             foreach (string tuple in tipBlock.Keys)
             {
-                Debug.Write(tuple + ": ");
+                Console.Write(tuple + ": ");
                 try
                 {
                     if (tipBlock[tuple] is null)
                     {
                         // It's genesis block.
-                        Debug.WriteLine("null");
+                        Console.WriteLine("null");
                     }
                     else if (tipBlock[tuple].GetType().Name == "Byte[]")
                     {
                         byte[] byteArray = (byte[])tipBlock[tuple];
-                        Debug.WriteLine(string.Join("-", byteArray));
+                        Console.WriteLine(string.Join("-", byteArray));
                     }
                     else
                     {
-                        Debug.WriteLine(tipBlock[tuple]);
+                        Console.WriteLine(tipBlock[tuple]);
                     }
                 }
                 catch (Exception exception)
                 {
-                    Debug.WriteLine("null");
+                    Console.WriteLine("null");
                 }
             }
             PrintAction(blockChain);
-            Debug.WriteLine("-----------------------------------------------");
+            Console.WriteLine("-----------------------------------------------");
         }
 
         private static void PrintAction(BlockChain blockChain)
@@ -210,34 +176,34 @@ namespace PracticeBlockChain.Test
                 GetObjectFromStorage
                 (
                     blockChain.ActionStorage, 
-                    blockChain.GetBlock(blockChain.HashofTipBlock).GetAction.ActionId
+                    blockChain.TipBlock.GetAction.ActionId
                 );
             Dictionary<string, object> action =
                 (Dictionary<string, object>)
                 ByteArrayConverter.DeSerialize(serializedAction);
             foreach (string tuple in action.Keys)
             {
-                Debug.Write(tuple + ": ");
+                Console.Write(tuple + ": ");
                 try
                 {
                     if (action[tuple] is null)
                     {
                         // It's genesis block.
-                        Debug.WriteLine("null");
+                        Console.WriteLine("null");
                     }
                     else if (action[tuple].GetType().Name == "Byte[]")
                     {
                         byte[] byteArray = (byte[])action[tuple];
-                        Debug.WriteLine(string.Join("-", byteArray));
+                        Console.WriteLine(string.Join("-", byteArray));
                     }
                     else
                     {
-                        Debug.WriteLine(action[tuple]);
+                        Console.WriteLine(action[tuple]);
                     }
                 }
                 catch (Exception exception)
                 {
-                    Debug.WriteLine("null");
+                    Console.WriteLine("null");
                 }
             }
         }
@@ -248,6 +214,15 @@ namespace PracticeBlockChain.Test
             return File.ReadAllBytes(
                 Path.Combine(storageAddress, string.Join("-", hashValue) + ".txt")
             );
+        }
+
+        private static void FileSystemWatcherCreated
+        (
+            object sender, FileSystemEventArgs e, BlockChain blockChain
+        )
+        {
+            Console.WriteLine("호출!");
+            TictactoeGameTest.PrintCurrentState(blockChain);
         }
     }
 }
