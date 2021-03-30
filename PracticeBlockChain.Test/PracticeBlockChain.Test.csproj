@@ -6,6 +6,12 @@
     <IsPackable>false</IsPackable>
 
     <StartupObject>PracticeBlockChain.Test.TictactoeGameTest</StartupObject>
+
+    <OutputType>WinExe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
