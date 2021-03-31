@@ -10,9 +10,6 @@ namespace PracticeBlockChain.Test
 {
     public static class TictactoeGameTest
     {
-        public static EventWaitHandle waitHandle =
-            new EventWaitHandle(true, EventResetMode.AutoReset, "SHARED_BY_ALL_PROCESSES");
-
         public static void Main(string[] args)
         {
             var blockChain = new BlockChain();
@@ -47,7 +44,7 @@ namespace PracticeBlockChain.Test
 
             blockChain.LoadTipBlock();
             PrintCurrentState(blockChain);
-            FileWatcher.RunWatcher(blockChain);
+            FileWatcher.RunWatcher(blockChain, playerAddress);
             while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
                 // Player
@@ -118,8 +115,6 @@ namespace PracticeBlockChain.Test
 
         public static void PrintCurrentState(BlockChain blockChain)
         {
-            waitHandle.WaitOne();
-            waitHandle.Set();
             string[,] currentState = blockChain.GetCurrentState();
 
             Console.WriteLine("---------------------------");
