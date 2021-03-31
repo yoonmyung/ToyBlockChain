@@ -1,15 +1,18 @@
 ﻿using System;
 using PracticeBlockChain.TicTacToeGame;
 using PracticeBlockChain.Cryptography;
-using System.Diagnostics;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace PracticeBlockChain.Test
 {
     public static class TictactoeGameTest
     {
+        public static EventWaitHandle waitHandle =
+            new EventWaitHandle(true, EventResetMode.AutoReset, "SHARED_BY_ALL_PROCESSES");
+
         public static void Main(string[] args)
         {
             var blockChain = new BlockChain();
@@ -24,7 +27,8 @@ namespace PracticeBlockChain.Test
                 "145-24-243-74-208-79-219-28-33-84-51-34-12-194-213"
             )
             {
-                AddressPlayerMappingAttribute.AddPlayer(
+                AddressPlayerMappingAttribute.AddPlayer
+                (
                     address: playerAddress,
                     playerName: "Kim"
                 );
@@ -34,50 +38,51 @@ namespace PracticeBlockChain.Test
                 "105-204-145-162-194-222-88-164-69-249-1-25-48-215-29"
             )
             {
-                AddressPlayerMappingAttribute.AddPlayer(
+                AddressPlayerMappingAttribute.AddPlayer
+                (
                     address: playerAddress,
                     playerName: "Lee"
                 );
             }
 
             blockChain.LoadTipBlock();
+            PrintCurrentState(blockChain);
             FileWatcher.RunWatcher(blockChain);
             while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
-                PrintCurrentState(blockChain);
-                PrintTipofBlock(blockChain);
                 // Player
                 Position position = DecidePositiontoPut(playerAddress);
+                // (상대방이 말을 둘 경우 여기서 FileWatcher가 감지)
                 // │
                 // │   Player는 BlockChain에게 자신이 수행한 것을 전달
                 // │
                 // ▼
                 // BlockChain
                 // Make an action without signature.
-                byte[] signature = 
+                byte[] signature =
                     privateKey.Sign
                     (
                         new Action
                         (
-                            txNonce: blockChain.GetHowmanyBlocksMinermade(playerAddress) + 1, 
+                            txNonce: blockChain.GetHowmanyBlocksMinermade(playerAddress) + 1,
                             signer: playerAddress,
-                            payload: position, 
+                            payload: position,
                             signature: null
                         ).Hash()
                     );
                 // Add a signature to an action.
-                Action action = 
+                Action action =
                     new Action
                     (
                         txNonce:
                         blockChain.GetHowmanyBlocksMinermade(playerAddress) + 1,
-                        signer: playerAddress, 
-                        payload: position, 
+                        signer: playerAddress,
+                        payload: position,
                         signature: signature
                     );
                 // Verify an action. (Validation)
                 // 본래는 같은 네트워크 상에 있는 다른 노드들이 검증함
-                bool isValidAction = publicKey.Verify(action.Hash(), action.Signature);
+                bool isValidAction = privateKey.PublicKey.Verify(action.Hash(), action.Signature);
                 // 작업증명
                 Nonce nonce =
                     HashCash.CalculateHash
@@ -87,7 +92,7 @@ namespace PracticeBlockChain.Test
                     );
                 // 작업증명에 대한 검증 작업 필요 (Libplanet의 Policy)
                 // Make block with executing action.
-                Block block = 
+                Block block =
                     new Block
                     (
                         index: blockChain.TipBlock.Index + 1,
@@ -99,11 +104,8 @@ namespace PracticeBlockChain.Test
                 if (!(blockChain.AddBlock(block)))
                 {
                     Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
-                    continue;
                 }
             }
-            PrintCurrentState(blockChain);
-            PrintTipofBlock(blockChain);
         }
 
         private static Position DecidePositiontoPut(Address address)
@@ -116,7 +118,10 @@ namespace PracticeBlockChain.Test
 
         public static void PrintCurrentState(BlockChain blockChain)
         {
+            waitHandle.WaitOne();
+            waitHandle.Set();
             string[,] currentState = blockChain.GetCurrentState();
+
             Console.WriteLine("---------------------------");
             for (var row = 0; row < 3; row++)
             {
@@ -170,6 +175,30 @@ namespace PracticeBlockChain.Test
             Console.WriteLine("-----------------------------------------------");
         }
 
+        private static void PrintWholeBlocks(BlockChain blockChain)
+        {
+            // Print blocks.
+            IEnumerator<Block> enumerator = blockChain.IterateBlock().GetEnumerator();
+            while (enumerator.MoveNext())
+            {
+                Console.WriteLine("****************************");
+                Console.WriteLine($"block index: {enumerator.Current.Index}");
+                Console.WriteLine($"block nonce: " +
+                    String.Join(" ", enumerator.Current.Nonce.NonceValue));
+                if (enumerator.Current.PreviousHash is null)
+                {
+                    Console.WriteLine($"block previous hash: null");
+                }
+                else
+                {
+                    Console.WriteLine($"block previous hash: " +
+                        String.Join(" ", enumerator.Current.PreviousHash)
+                    );
+                }
+                Console.WriteLine($"block timestamp: {enumerator.Current.TimeStamp}");
+            }
+        }
+
         private static void PrintAction(BlockChain blockChain)
         {
             byte[] serializedAction = 
@@ -214,15 +243,6 @@ namespace PracticeBlockChain.Test
             return File.ReadAllBytes(
                 Path.Combine(storageAddress, string.Join("-", hashValue) + ".txt")
             );
-        }
-
-        private static void FileSystemWatcherCreated
-        (
-            object sender, FileSystemEventArgs e, BlockChain blockChain
-        )
-        {
-            Console.WriteLine("호출!");
-            TictactoeGameTest.PrintCurrentState(blockChain);
         }
     }
 }
