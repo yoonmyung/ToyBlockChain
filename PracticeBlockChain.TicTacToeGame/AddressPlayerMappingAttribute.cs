@@ -6,11 +6,8 @@ namespace PracticeBlockChain.TicTacToeGame
 {
     public static class AddressPlayerMappingAttribute
     {
-        private static readonly Dictionary<Address, string> _listofPlayers;
-
-        static AddressPlayerMappingAttribute() {
-            _listofPlayers = new Dictionary<Address, string>();
-        }
+        private static readonly Dictionary<Address, string> _listofPlayers
+             = new Dictionary<Address, string>();
 
         public static void AddPlayer(Address address, string playerName)
         {
