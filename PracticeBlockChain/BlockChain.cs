@@ -35,6 +35,14 @@ namespace PracticeBlockChain
             }
         }
 
+        public Block GenesisBlock 
+        {
+            get
+            {
+                return _genesisBlock;
+            }
+        }
+
         public Block TipBlock
         {
             get
@@ -93,21 +101,21 @@ namespace PracticeBlockChain
                         signature: null
                     )
                 );
-            _tipBlock = _genesisBlock;
+            _tipBlock = GenesisBlock;
             InitializeState();
             File.WriteAllBytes
             (
-                Path.Combine(BlockStorage, String.Join("-", _genesisBlock.Hash()) + ".txt"),
-                _genesisBlock.SerializeForStorage()
+                Path.Combine(BlockStorage, String.Join("-", GenesisBlock.Hash()) + ".txt"),
+                GenesisBlock.SerializeForStorage()
             );
             File.WriteAllBytes
             (
                 Path.Combine
                 (
                     ActionStorage, 
-                    String.Join("-", _genesisBlock.GetAction.ActionId) + ".txt"
+                    String.Join("-", GenesisBlock.GetAction.ActionId) + ".txt"
                 ),
-                _genesisBlock.GetAction.SerializeForStorage()
+                GenesisBlock.GetAction.SerializeForStorage()
             );
         }
 
@@ -204,7 +212,7 @@ namespace PracticeBlockChain
             }
             File.WriteAllBytes
             (
-                Path.Combine(StateStorage, String.Join("-", _genesisBlock.Hash()) + ".txt"),
+                Path.Combine(StateStorage, String.Join("-", GenesisBlock.Hash()) + ".txt"),
                 SerializeState(board)
             );
         }
@@ -218,7 +226,7 @@ namespace PracticeBlockChain
                     DifficultyUpdater.UpdateDifficulty
                     (
                         difficulty: Difficulty,
-                        previouTimeStamp: _genesisBlock.TimeStamp,
+                        previouTimeStamp: GenesisBlock.TimeStamp,
                         currentTimeStamp: block.TimeStamp
                     );
             }
@@ -246,9 +254,9 @@ namespace PracticeBlockChain
                 if (block.Index > tipIndex)
                 {
                     tipIndex = block.Index;
-                    _tipBlock = block;
                 }
             }
+            _tipBlock = GetBlock(tipIndex);
         }
 
         public bool AddBlock(Block block)
@@ -286,13 +294,22 @@ namespace PracticeBlockChain
                 Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
                 SerializeState(updatedBoard)
             );
+            RefreshStorage();
             UpdateTip();
             UpdateDifficulty(block);
-            Directory.SetCurrentDirectory(BlockStorage);
-            Directory.SetCurrentDirectory(ActionStorage);
-            Directory.SetCurrentDirectory(StateStorage);
 
             return true;
+        }
+
+        public void RefreshStorage()
+        {
+            var blockDirectory = new DirectoryInfo(BlockStorage);
+            var actionDirectory = new DirectoryInfo(ActionStorage);
+            var stateDirectory = new DirectoryInfo(StateStorage);
+
+            blockDirectory.Refresh();
+            actionDirectory.Refresh();
+            stateDirectory.Refresh();
         }
 
         private bool isNotStateChange(string[,] currentBoard, string[,] updatedBoard)
@@ -366,6 +383,9 @@ namespace PracticeBlockChain
         {
             var directoryInfo = new DirectoryInfo(StateStorage);
             string[,] state = null;
+
+            RefreshStorage();
+            UpdateTip();
             foreach (var file in directoryInfo.GetFiles())
             {
                 byte[] hashofBlock =
