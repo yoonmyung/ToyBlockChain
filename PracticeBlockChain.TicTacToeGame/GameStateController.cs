@@ -1,6 +1,5 @@
-﻿using PracticeBlockChain.Cryptography;
-using System;
-using System.Linq;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace PracticeBlockChain.TicTacToeGame
 {
@@ -20,10 +19,11 @@ namespace PracticeBlockChain.TicTacToeGame
             }
         }
 
-        public static bool IsEnd(string[,] board)
+        public static async Task<bool> IsEnd(string[,] board)
         {
             var countofFilledTuples = 0;
 
+            await Task.Delay(100);
             foreach(string tuple in board)
             {
                 if (tuple.Length > 0)
