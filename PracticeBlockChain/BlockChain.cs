@@ -102,7 +102,6 @@ namespace PracticeBlockChain
                     )
                 );
             _tipBlock = GenesisBlock;
-            InitializeState();
             File.WriteAllBytes
             (
                 Path.Combine(BlockStorage, String.Join("-", GenesisBlock.Hash()) + ".txt"),
@@ -117,12 +116,13 @@ namespace PracticeBlockChain
                 ),
                 GenesisBlock.GetAction.SerializeForStorage()
             );
+            InitializeState();
         }
 
         public void LoadTipBlock()
         {
-            var directoryInfo = new DirectoryInfo(BlockStorage);
-            var numberofStoredGameStates = directoryInfo.GetFiles().Length;
+            var files = LoadFilesFromStorage(BlockStorage);
+            var numberofStoredGameStates = files.Length;
             long indexofTipBlock = 0;
 
             if (numberofStoredGameStates <= 0)
@@ -130,9 +130,9 @@ namespace PracticeBlockChain
                 SetGenesisBlock();
                 return;
             }
-            foreach (var file in directoryInfo.GetFiles())
+            foreach (var file in files)
             {
-                Block block = LoadBlockFromStorage(file.Name);
+                Block block = LoadBlockFromFile(file.Name);
                 if (block.Index == 0)
                 {
                     _genesisBlock = block;
@@ -145,21 +145,18 @@ namespace PracticeBlockChain
             _tipBlock = GetBlock(indexofTipBlock);
         }
 
-        private Block LoadBlockFromStorage(string file)
+        private Block LoadBlockFromFile(string file)
         {
-            byte[] serializedBlock =
-                File.ReadAllBytes(Path.Combine(BlockStorage, file));
+            byte[] serializedBlock = LoadFileFromStorage(BlockStorage, file);
             Dictionary<string, object> dataAboutBlock =
                 (Dictionary<string, object>)
                 ByteArrayConverter.DeSerialize(serializedBlock);
-            byte[] serializedAction =
-                File.ReadAllBytes(
-                    Path.Combine
-                    (
-                        ActionStorage,
-                        string.Join("-", (byte[])dataAboutBlock["actionId"]) +
-                        ".txt"
-                    )
+
+            byte[] serializedAction = 
+                LoadFileFromStorage
+                (
+                    ActionStorage, 
+                    string.Join("-", (byte[])dataAboutBlock["actionId"]) + ".txt"
                 );
             Dictionary<string, object> dataAboutAction =
                 (Dictionary<string, object>)
@@ -187,6 +184,7 @@ namespace PracticeBlockChain
                     payload: position,
                     signature: (byte[])dataAboutAction["signature"]
                 );
+
             Block block =
                 new Block
                 (
@@ -242,15 +240,14 @@ namespace PracticeBlockChain
             }
         }
 
-        private void UpdateTip()
+        private void UpdateTip(Address address)
         {
-            var directoryInfo = new DirectoryInfo(BlockStorage);
             long tipIndex = 0;
             Block block = null;
 
-            foreach (var file in directoryInfo.GetFiles())
+            foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromStorage(file.Name);
+                block = LoadBlockFromFile(file.Name);
                 if (block.Index > tipIndex)
                 {
                     tipIndex = block.Index;
@@ -270,7 +267,7 @@ namespace PracticeBlockChain
                     position: block.GetAction.Payload, 
                     address: block.GetAction.Signer
                 );
-            if (isNotStateChange(GetCurrentState(), updatedBoard))
+            if (isNotStateChange(GetCurrentState(null), updatedBoard))
             {
                 return false;
             }
@@ -289,19 +286,19 @@ namespace PracticeBlockChain
                 ),
                 block.GetAction.SerializeForStorage()
             );
+            RefreshStorage();
+            UpdateTip(block.GetAction.Signer);
             File.WriteAllBytes
             (
                 Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
                 SerializeState(updatedBoard)
             );
-            RefreshStorage();
-            UpdateTip();
             UpdateDifficulty(block);
 
             return true;
         }
 
-        public void RefreshStorage()
+        private void RefreshStorage()
         {
             var blockDirectory = new DirectoryInfo(BlockStorage);
             var actionDirectory = new DirectoryInfo(ActionStorage);
@@ -325,33 +322,32 @@ namespace PracticeBlockChain
 
         public Block GetBlock(long blockIndex)
         {
-            var directoryInfo = new DirectoryInfo(BlockStorage);
             Block block = null;
 
-            foreach (var file in directoryInfo.GetFiles())
+            foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromStorage(file.Name);
+                block = LoadBlockFromFile(file.Name);
                 if (block.Index == blockIndex)
                 {
                     break;
                 }
             }
+
             return block;
         }
 
         public Block GetBlock(byte[] hashValue)
         {
-            var directoryInfo = new DirectoryInfo(BlockStorage);
             Block block = null;
 
-            foreach (var file in directoryInfo.GetFiles())
+            foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
                 byte[] hashofBlock = 
                     Path.GetFileNameWithoutExtension(file.Name).Split("-")
                     .Select(x => Convert.ToByte(x)).ToArray();
                 if (hashofBlock.SequenceEqual(hashValue))
                 {
-                    block = LoadBlockFromStorage(file.Name);
+                    block = LoadBlockFromFile(file.Name);
                     break;
                 }
             }
@@ -366,11 +362,10 @@ namespace PracticeBlockChain
 
             foreach (var file in directoryInfo.GetFiles())
             {
-                Block block = LoadBlockFromStorage(file.Name);
+                Block block = LoadBlockFromFile(file.Name);
                 if (block.Index == blockIndex)
                 {
-                    byte[] serializedState =
-                        File.ReadAllBytes(Path.Combine(StateStorage, file.Name));
+                    byte[] serializedState = LoadFileFromStorage(StateStorage, file.Name);
                     state = (string[,])ByteArrayConverter.DeSerialize(serializedState);
                     break;
                 }
@@ -379,28 +374,57 @@ namespace PracticeBlockChain
             return state;
         }
 
-        public string[,] GetCurrentState()
+        public string[,] GetCurrentState(Address address)
         {
-            var directoryInfo = new DirectoryInfo(StateStorage);
             string[,] state = null;
 
             RefreshStorage();
-            UpdateTip();
-            foreach (var file in directoryInfo.GetFiles())
+            UpdateTip(address);
+            foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
                 byte[] hashofBlock =
                     Path.GetFileNameWithoutExtension(file.Name).Split("-")
                     .Select(x => Convert.ToByte(x)).ToArray();
                 if (hashofBlock.SequenceEqual(TipBlock.Hash()))
                 {
-                    byte[] serializedState =
-                        File.ReadAllBytes(Path.Combine(StateStorage, file.Name));
+                    byte[] serializedState = LoadFileFromStorage(StateStorage, file.Name);
                     state = (string[,])ByteArrayConverter.DeSerialize(serializedState);
                     break;
                 }
             }
 
             return state;
+        }
+
+        private byte[] LoadFileFromStorage(string storage, string fileName)
+        {
+            while (true)
+            {
+                try
+                {
+                    return File.ReadAllBytes(Path.Combine(storage, fileName));
+                }
+                catch (IOException e)
+                {
+                    continue;
+                }
+            }
+        }
+
+        private FileInfo[] LoadFilesFromStorage(string storage)
+        {
+            while (true)
+            {
+                try
+                {
+                    DirectoryInfo directoryInfo = new DirectoryInfo(storage);
+                    return directoryInfo.GetFiles();
+                }
+                catch (IOException e)
+                {
+                    continue;
+                }
+            }
         }
 
         private byte[] SerializeState(string[,] state)
@@ -436,11 +460,11 @@ namespace PracticeBlockChain
 
         public IEnumerable<Block> IterateBlock()
         {
-            var directoryInfo = new DirectoryInfo(BlockStorage);
             Block block = null;
-            foreach (var file in directoryInfo.GetFiles())
+
+            foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromStorage(file.Name);
+                block = LoadBlockFromFile(file.Name);
                 yield return block;
             }
         }
