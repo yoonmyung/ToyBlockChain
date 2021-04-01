@@ -12,18 +12,13 @@ namespace PracticeBlockChain
     [Serializable]
     public class Block
     {
-        private readonly long _index;
-        private readonly byte[] _previousHash;
-        private readonly DateTimeOffset _timeStamp;
-        private readonly Nonce _nonce;
-        private readonly Action _action;
-
         public Block(
             long index, 
             byte[] previousHash, 
             DateTimeOffset timeStamp, 
             Nonce nonce, 
-            Action action
+            Action action,
+            long difficulty
         ) 
         {
             Index = index;
@@ -31,6 +26,7 @@ namespace PracticeBlockChain
             TimeStamp = timeStamp;
             Nonce = nonce;
             GetAction = action;
+            Difficulty = difficulty;
         }
 
         public long Index
@@ -54,6 +50,11 @@ namespace PracticeBlockChain
         }
 
         public Action GetAction
+        {
+            get;
+        }
+
+        public long Difficulty
         {
             get;
         }

@@ -11,7 +11,6 @@ namespace PracticeBlockChain
     {
         private Block _tipBlock;
         private Block _genesisBlock;
-        private long _difficulty;
         private readonly string _blockStorage;
         private readonly string _actionStorage;
         private readonly string _stateStorage;
@@ -20,19 +19,6 @@ namespace PracticeBlockChain
         public BlockChain()
         {
             Random random = new Random();
-            _difficulty = random.Next(10000);
-        }
-
-        public long Difficulty
-        {
-            get 
-            {
-                return _difficulty;
-            }
-            set
-            {
-                _difficulty = value;
-            }
         }
 
         public Block GenesisBlock 
