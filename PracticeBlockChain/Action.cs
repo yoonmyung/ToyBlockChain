@@ -106,6 +106,7 @@ namespace PracticeBlockChain
             var hashAlgo = SHA256.Create();
             byte[] hashInput = Serialize();
             var hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
+
             return hashDigest.ToByteArray();
         }
 
@@ -115,7 +116,7 @@ namespace PracticeBlockChain
             Address address
         )
         {
-            string[,] updatedState = blockChain.GetCurrentState();
+            string[,] updatedState = blockChain.GetCurrentState(null);
 
             if (GameStateController.IsAbletoPut(updatedState, position))
             {
