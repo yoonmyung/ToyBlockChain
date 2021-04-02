@@ -85,7 +85,8 @@ namespace PracticeBlockChain
                         signer: new Address(new PrivateKey().PublicKey),
                         payload: null,
                         signature: null
-                    )
+                    ),
+                    difficulty: DifficultyUpdater.UpdateDifficulty(this)
                 );
             _tipBlock = GenesisBlock;
             File.WriteAllBytes
