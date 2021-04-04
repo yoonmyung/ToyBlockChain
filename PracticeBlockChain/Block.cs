@@ -99,6 +99,7 @@ namespace PracticeBlockChain
             var mStream = new MemoryStream();
 
             componentsToSerialize.Add("index", Index);
+            componentsToSerialize.Add("difficulty", Difficulty);
             if (!(GetAction is null))
             {
                 componentsToSerialize.Add("actionId", GetAction.ActionId);
