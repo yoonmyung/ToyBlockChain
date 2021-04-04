@@ -89,23 +89,17 @@ namespace PracticeBlockChain.Test
                 // 본래는 같은 네트워크 상에 있는 다른 노드들이 검증함
                 bool isValidAction = privateKey.PublicKey.Verify(action.Hash(), action.Signature);
                 // 작업증명
-                Nonce nonce =
-                    HashCash.CalculateHash
-                    (
-                        previousBlock: blockChain.GetBlock(blockChain.TipBlock.Hash()),
-                        blockChain: blockChain
-                    );
-                // 작업증명에 대한 검증 작업 필요 (Libplanet의 Policy)
-                // Make block with executing action.
                 Block block =
                     new Block
                     (
                         index: blockChain.TipBlock.Index + 1,
                         previousHash: blockChain.TipBlock.Hash(),
                         timeStamp: DateTimeOffset.Now,
-                        nonce: nonce,
-                        action: action
+                        nonce: HashCash.CalculateHash(blockChain),
+                        action: action,
+                        difficulty: DifficultyUpdater.UpdateDifficulty(blockChain)
                     );
+                // 만들어진 블록을 체인에 붙이기 전 검증 작업 필요 (Libplanet의 Policy)
                 if (!(blockChain.AddBlock(block)))
                 {
                     Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
