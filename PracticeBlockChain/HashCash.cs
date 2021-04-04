@@ -6,9 +6,10 @@ namespace PracticeBlockChain
 {
     public static class HashCash
     {
-        public static Nonce CalculateHash(Block previousBlock, BlockChain blockChain)
+        public static Nonce CalculateHash(BlockChain blockChain)
         {
             var hashAlgo = SHA256.Create();
+            var difficulty = DifficultyUpdater.UpdateDifficulty(blockChain);
             BigInteger hashDigest;
             Nonce nonce = null;
 
@@ -16,12 +17,12 @@ namespace PracticeBlockChain
             {
                 nonce = new NonceGenerator().GenerateNonce();
                 byte[] hashInput =
-                    previousBlock.Serialize()
+                    blockChain.TipBlock.Serialize()
                     .Concat(nonce.NonceValue)
                     .ToArray();
                 hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
             } 
-            while (hashDigest < blockChain.Difficulty);
+            while (hashDigest < difficulty);
 
             return nonce;
         }
