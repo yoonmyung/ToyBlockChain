@@ -85,7 +85,8 @@ namespace PracticeBlockChain
                         signer: new Address(new PrivateKey().PublicKey),
                         payload: null,
                         signature: null
-                    )
+                    ),
+                    difficulty: DifficultyUpdater.UpdateDifficulty(this)
                 );
             _tipBlock = GenesisBlock;
             File.WriteAllBytes
@@ -178,7 +179,8 @@ namespace PracticeBlockChain
                     previousHash: previousHash,
                     timeStamp: (DateTimeOffset)dataAboutBlock["timeStamp"],
                     nonce: new Nonce((byte[])dataAboutBlock["nonce"]),
-                    action: action
+                    action: action,
+                    difficulty: (long)dataAboutBlock["difficulty"]
                 );
 
             return block;
@@ -199,31 +201,6 @@ namespace PracticeBlockChain
                 Path.Combine(StateStorage, String.Join("-", GenesisBlock.Hash()) + ".txt"),
                 SerializeState(board)
             );
-        }
-
-        private void UpdateDifficulty(Block block)
-        {
-            if (block.PreviousHash is null)
-            {
-                // It's a genesis block.
-                Difficulty =
-                    DifficultyUpdater.UpdateDifficulty
-                    (
-                        difficulty: Difficulty,
-                        previouTimeStamp: GenesisBlock.TimeStamp,
-                        currentTimeStamp: block.TimeStamp
-                    );
-            }
-            else
-            {
-                Difficulty =
-                    DifficultyUpdater.UpdateDifficulty
-                    (
-                        difficulty: Difficulty,
-                        previouTimeStamp: GetBlock(block.PreviousHash).TimeStamp,
-                        currentTimeStamp: block.TimeStamp
-                    );
-            }
         }
 
         private void UpdateTip(Address address)
@@ -279,7 +256,6 @@ namespace PracticeBlockChain
                 Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
                 SerializeState(updatedBoard)
             );
-            UpdateDifficulty(block);
 
             return true;
         }
