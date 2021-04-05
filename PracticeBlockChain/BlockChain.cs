@@ -200,31 +200,6 @@ namespace PracticeBlockChain
             );
         }
 
-        private void UpdateDifficulty(Block block)
-        {
-            if (block.PreviousHash is null)
-            {
-                // It's a genesis block.
-                Difficulty =
-                    DifficultyUpdater.UpdateDifficulty
-                    (
-                        difficulty: Difficulty,
-                        previouTimeStamp: GenesisBlock.TimeStamp,
-                        currentTimeStamp: block.TimeStamp
-                    );
-            }
-            else
-            {
-                Difficulty =
-                    DifficultyUpdater.UpdateDifficulty
-                    (
-                        difficulty: Difficulty,
-                        previouTimeStamp: GetBlock(block.PreviousHash).TimeStamp,
-                        currentTimeStamp: block.TimeStamp
-                    );
-            }
-        }
-
         private void UpdateTip()
         {
             long tipIndex = 0;
