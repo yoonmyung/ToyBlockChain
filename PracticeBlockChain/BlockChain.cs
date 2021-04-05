@@ -102,7 +102,6 @@ namespace PracticeBlockChain
                     )
                 );
             _tipBlock = GenesisBlock;
-            InitializeState();
             File.WriteAllBytes
             (
                 Path.Combine(BlockStorage, String.Join("-", GenesisBlock.Hash()) + ".txt"),
@@ -117,6 +116,7 @@ namespace PracticeBlockChain
                 ),
                 GenesisBlock.GetAction.SerializeForStorage()
             );
+            InitializeState();
         }
 
         public void LoadTipBlock()
@@ -283,13 +283,13 @@ namespace PracticeBlockChain
                 ),
                 block.GetAction.SerializeForStorage()
             );
+            RefreshStorage();
+            UpdateTip();
             File.WriteAllBytes
             (
                 Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
                 SerializeState(updatedBoard)
             );
-            RefreshStorage();
-            UpdateTip();
             UpdateDifficulty(block);
 
             return true;
