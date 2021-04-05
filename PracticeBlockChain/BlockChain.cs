@@ -119,7 +119,7 @@ namespace PracticeBlockChain
             }
             foreach (var file in files)
             {
-                Block block = LoadBlockFromFile(file.Name);
+                Block block = LoadBlockFromStorage(file.Name);
                 if (block.Index == 0)
                 {
                     _genesisBlock = block;
@@ -132,17 +132,15 @@ namespace PracticeBlockChain
             _tipBlock = GetBlock(indexofTipBlock);
         }
 
-        private Block LoadBlockFromFile(string file)
+        private Block LoadBlockFromStorage(string file)
         {
             byte[] serializedBlock = LoadFileFromStorage(BlockStorage, file);
             Dictionary<string, object> dataAboutBlock =
                 (Dictionary<string, object>)
                 ByteArrayConverter.DeSerialize(serializedBlock);
-
-            byte[] serializedAction = 
-                LoadFileFromStorage
-                (
-                    ActionStorage, 
+            byte[] serializedAction =
+                LoadFileFromStorage(
+                    ActionStorage,
                     string.Join("-", (byte[])dataAboutBlock["actionId"]) + ".txt"
                 );
             Dictionary<string, object> dataAboutAction =
@@ -171,7 +169,6 @@ namespace PracticeBlockChain
                     payload: position,
                     signature: (byte[])dataAboutAction["signature"]
                 );
-
             Block block =
                 new Block
                 (
@@ -202,14 +199,39 @@ namespace PracticeBlockChain
             );
         }
 
-        private void UpdateTip(Address address)
+        private void UpdateDifficulty(Block block)
+        {
+            if (block.PreviousHash is null)
+            {
+                // It's a genesis block.
+                Difficulty =
+                    DifficultyUpdater.UpdateDifficulty
+                    (
+                        difficulty: Difficulty,
+                        previouTimeStamp: GenesisBlock.TimeStamp,
+                        currentTimeStamp: block.TimeStamp
+                    );
+            }
+            else
+            {
+                Difficulty =
+                    DifficultyUpdater.UpdateDifficulty
+                    (
+                        difficulty: Difficulty,
+                        previouTimeStamp: GetBlock(block.PreviousHash).TimeStamp,
+                        currentTimeStamp: block.TimeStamp
+                    );
+            }
+        }
+
+        private void UpdateTip()
         {
             long tipIndex = 0;
             Block block = null;
 
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromFile(file.Name);
+                block = LoadBlockFromStorage(file.Name);
                 if (block.Index > tipIndex)
                 {
                     tipIndex = block.Index;
@@ -229,7 +251,7 @@ namespace PracticeBlockChain
                     position: block.GetAction.Payload, 
                     address: block.GetAction.Signer
                 );
-            if (isNotStateChange(GetCurrentState(null), updatedBoard))
+            if (isNotStateChange(GetCurrentState(), updatedBoard))
             {
                 return false;
             }
@@ -249,7 +271,7 @@ namespace PracticeBlockChain
                 block.GetAction.SerializeForStorage()
             );
             RefreshStorage();
-            UpdateTip(block.GetAction.Signer);
+            UpdateTip();
             File.WriteAllBytes
             (
                 Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
@@ -287,13 +309,12 @@ namespace PracticeBlockChain
 
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromFile(file.Name);
+                block = LoadBlockFromStorage(file.Name);
                 if (block.Index == blockIndex)
                 {
                     break;
                 }
             }
-
             return block;
         }
 
@@ -308,7 +329,7 @@ namespace PracticeBlockChain
                     .Select(x => Convert.ToByte(x)).ToArray();
                 if (hashofBlock.SequenceEqual(hashValue))
                 {
-                    block = LoadBlockFromFile(file.Name);
+                    block = LoadBlockFromStorage(file.Name);
                     break;
                 }
             }
@@ -323,10 +344,11 @@ namespace PracticeBlockChain
 
             foreach (var file in directoryInfo.GetFiles())
             {
-                Block block = LoadBlockFromFile(file.Name);
+                Block block = LoadBlockFromStorage(file.Name);
                 if (block.Index == blockIndex)
                 {
-                    byte[] serializedState = LoadFileFromStorage(StateStorage, file.Name);
+                    byte[] serializedState =
+                        File.ReadAllBytes(Path.Combine(StateStorage, file.Name));
                     state = (string[,])ByteArrayConverter.DeSerialize(serializedState);
                     break;
                 }
@@ -335,12 +357,12 @@ namespace PracticeBlockChain
             return state;
         }
 
-        public string[,] GetCurrentState(Address address)
+        public string[,] GetCurrentState()
         {
             string[,] state = null;
 
             RefreshStorage();
-            UpdateTip(address);
+            UpdateTip();
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
                 byte[] hashofBlock =
@@ -425,7 +447,7 @@ namespace PracticeBlockChain
 
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromFile(file.Name);
+                block = LoadBlockFromStorage(file.Name);
                 yield return block;
             }
         }

@@ -116,7 +116,7 @@ namespace PracticeBlockChain
             Address address
         )
         {
-            string[,] updatedState = blockChain.GetCurrentState(null);
+            string[,] updatedState = blockChain.GetCurrentState();
 
             if (GameStateController.IsAbletoPut(updatedState, position))
             {

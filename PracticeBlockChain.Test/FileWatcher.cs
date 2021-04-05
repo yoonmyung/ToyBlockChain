@@ -23,16 +23,16 @@ namespace PracticeBlockChain.Test
                 | NotifyFilters.Security
                 | NotifyFilters.Size;
             var handler = 
-                new FileSystemEventHandler((s, e) => WatcherOnChanged(s, e, blockChain, address));
+                new FileSystemEventHandler((s, e) => WatcherOnChanged(s, e, blockChain));
             directoryWatcher.Created += handler;
             GC.KeepAlive(directoryWatcher);
             directoryWatcher.EnableRaisingEvents = true;
         }
 
         private static void WatcherOnChanged
-        (object sender, FileSystemEventArgs e, BlockChain blockChain, Address address)
+        (object sender, FileSystemEventArgs e, BlockChain blockChain)
         {
-            TictactoeGameTest.PrintCurrentState(blockChain, address);
+            TictactoeGameTest.PrintCurrentState(blockChain);
         }
     }
 }
