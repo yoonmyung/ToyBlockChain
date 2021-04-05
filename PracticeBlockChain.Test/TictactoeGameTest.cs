@@ -48,7 +48,16 @@ namespace PracticeBlockChain.Test
             while (!(await GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
                 // Player
-                Position position = DecidePositiontoPut(playerAddress);
+                Position position = null;
+                if (isPlayerTurn(blockChain, playerAddress))
+                {
+                    await Task.Delay(100);
+                    position = DecidePositiontoPut(playerAddress);
+                }
+                else
+                {
+                    continue;
+                }
                 // (상대방이 말을 둘 경우 여기서 FileWatcher가 감지)
                 // │
                 // │   Player는 BlockChain에게 자신이 수행한 것을 전달
@@ -97,6 +106,24 @@ namespace PracticeBlockChain.Test
                     Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
                 }
             }
+        }
+
+        private static bool isPlayerTurn(BlockChain blockChain, Address address)
+        {
+            if (blockChain.TipBlock.Index == 0)
+            {
+                if (AddressPlayerMappingAttribute.GetPlayer(address) == "Kim")
+                {
+                    return true;
+                }
+                return false;
+            }
+            else if
+                (blockChain.TipBlock.GetAction.Signer.AddressValue.SequenceEqual(address.AddressValue))
+            {
+                return false;
+            }
+            return true;
         }
 
         private static Position DecidePositiontoPut(Address address)
