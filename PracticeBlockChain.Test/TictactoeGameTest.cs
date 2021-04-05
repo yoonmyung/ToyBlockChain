@@ -4,13 +4,13 @@ using PracticeBlockChain.Cryptography;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace PracticeBlockChain.Test
 {
     public static class TictactoeGameTest
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var blockChain = new BlockChain();
             var privateKey =
@@ -43,21 +43,13 @@ namespace PracticeBlockChain.Test
             }
 
             blockChain.LoadTipBlock();
-            PrintCurrentState(blockChain, playerAddress);
+            PrintCurrentState(blockChain);
             FileWatcher.RunWatcher(blockChain, playerAddress);
-            while (!(await GameStateController.IsEnd(blockChain.GetCurrentState(playerAddress))))
+            while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
                 // Player
-                Position position = null;
-                if (isPlayerTurn(blockChain, playerAddress))
-                {
-                    await Task.Delay(100);
-                    position = DecidePositiontoPut(playerAddress);
-                }
-                else
-                {
-                    continue;
-                }
+                Position position = DecidePositiontoPut(playerAddress);
+                // (상대방이 말을 둘 경우 여기서 FileWatcher가 감지)
                 // │
                 // │   Player는 BlockChain에게 자신이 수행한 것을 전달
                 // │
@@ -109,27 +101,8 @@ namespace PracticeBlockChain.Test
                 if (!(blockChain.AddBlock(block)))
                 {
                     Console.WriteLine($"({position.X}, {position.Y})에 둘 수 없습니다");
-                    continue;
                 }
             }
-        }
-
-        private static bool isPlayerTurn(BlockChain blockChain, Address address)
-        {
-            if (blockChain.TipBlock.Index == 0)
-            {
-                if (AddressPlayerMappingAttribute.GetPlayer(address) == "Kim")
-                {
-                    return true;
-                }
-                return false;
-            }
-            else if 
-                (blockChain.TipBlock.GetAction.Signer.AddressValue.SequenceEqual(address.AddressValue))
-            {
-                return false;
-            }
-            return true;
         }
 
         private static Position DecidePositiontoPut(Address address)
@@ -140,11 +113,11 @@ namespace PracticeBlockChain.Test
             return new Position(int.Parse(input[0]), int.Parse(input[1]));
         }
 
-        public static void PrintCurrentState(BlockChain blockChain, Address address)
+        public static void PrintCurrentState(BlockChain blockChain)
         {
-            string[,] currentState = blockChain.GetCurrentState(address);
+            string[,] currentState = blockChain.GetCurrentState();
 
-            Console.WriteLine("\n---------------------------");
+            Console.WriteLine("---------------------------");
             for (var row = 0; row < 3; row++)
             {
                 for (var column = 0; column < 3; column++)
