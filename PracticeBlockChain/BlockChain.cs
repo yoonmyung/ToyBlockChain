@@ -295,7 +295,7 @@ namespace PracticeBlockChain
             return true;
         }
 
-        public void RefreshStorage()
+        private void RefreshStorage()
         {
             var blockDirectory = new DirectoryInfo(BlockStorage);
             var actionDirectory = new DirectoryInfo(ActionStorage);
