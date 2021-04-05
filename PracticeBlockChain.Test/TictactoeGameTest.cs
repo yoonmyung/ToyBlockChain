@@ -4,13 +4,13 @@ using PracticeBlockChain.Cryptography;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
+using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Test
 {
     public static class TictactoeGameTest
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var blockChain = new BlockChain();
             var privateKey =
@@ -45,7 +45,7 @@ namespace PracticeBlockChain.Test
             blockChain.LoadTipBlock();
             PrintCurrentState(blockChain);
             FileWatcher.RunWatcher(blockChain, playerAddress);
-            while (!(GameStateController.IsEnd(blockChain.GetCurrentState())))
+            while (!(await GameStateController.IsEnd(blockChain.GetCurrentState())))
             {
                 // Player
                 Position position = DecidePositiontoPut(playerAddress);
