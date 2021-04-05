@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace PracticeBlockChain
 {
@@ -8,26 +6,31 @@ namespace PracticeBlockChain
     {
         public static readonly long _minimumDifficulty = 1024;
         public static readonly long _difficultyBoundDivisor = 128;
+        public const long _minimumMultiplier = -99;
 
-        public static long UpdateDifficulty(
-            long difficulty,
-            DateTimeOffset previouTimeStamp,
-            DateTimeOffset currentTimeStamp
-        )
+        public static long UpdateDifficulty(BlockChain blockChain)
         {
             //EIP-2
-            //Libplanet/Blockchain/Policies/BlockPolicy.cs 참조 
-            var prevDifficulty = difficulty;
-            TimeSpan timeInterval = currentTimeStamp - previouTimeStamp;
-            const long minimumMultiplier = -99;
+            //Libplanet/Blockchain/Policies/BlockPolicy.cs/GetNextBlockDifficulty 함수 참조 
+            var previousBlock = blockChain.TipBlock;
+            Block prevPreviousBlock = null;
+            try
+            {
+                prevPreviousBlock = blockChain.GetBlock(blockChain.TipBlock.PreviousHash);
+            }
+            catch (Exception e)
+            {
+                return _minimumDifficulty;
+            }
+            TimeSpan timeInterval = previousBlock.TimeStamp - prevPreviousBlock.TimeStamp;
             var multiplier =
                 1 - (timeInterval.TotalMilliseconds / _difficultyBoundDivisor);
-            multiplier = Math.Max(multiplier, minimumMultiplier);
-
-            var offset = prevDifficulty / _minimumDifficulty;
+            var offset = previousBlock.Difficulty / _minimumDifficulty;
+            multiplier = Math.Max(multiplier, _minimumMultiplier);
             long nextDifficulty = 
-                Convert.ToInt64(prevDifficulty + (offset * multiplier));
+                Convert.ToInt64(previousBlock.Difficulty + (offset * multiplier));
             nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
+            
             return nextDifficulty;
         }
     }

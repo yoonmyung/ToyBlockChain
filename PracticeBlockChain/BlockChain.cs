@@ -11,7 +11,6 @@ namespace PracticeBlockChain
     {
         private Block _tipBlock;
         private Block _genesisBlock;
-        private long _difficulty;
         private readonly string _blockStorage;
         private readonly string _actionStorage;
         private readonly string _stateStorage;
@@ -20,19 +19,6 @@ namespace PracticeBlockChain
         public BlockChain()
         {
             Random random = new Random();
-            _difficulty = random.Next(10000);
-        }
-
-        public long Difficulty
-        {
-            get 
-            {
-                return _difficulty;
-            }
-            set
-            {
-                _difficulty = value;
-            }
         }
 
         public Block GenesisBlock 
@@ -99,7 +85,8 @@ namespace PracticeBlockChain
                         signer: new Address(new PrivateKey().PublicKey),
                         payload: null,
                         signature: null
-                    )
+                    ),
+                    difficulty: DifficultyUpdater.UpdateDifficulty(this)
                 );
             _tipBlock = GenesisBlock;
             File.WriteAllBytes
@@ -189,7 +176,8 @@ namespace PracticeBlockChain
                     previousHash: previousHash,
                     timeStamp: (DateTimeOffset)dataAboutBlock["timeStamp"],
                     nonce: new Nonce((byte[])dataAboutBlock["nonce"]),
-                    action: action
+                    action: action,
+                    difficulty: (long)dataAboutBlock["difficulty"]
                 );
 
             return block;
@@ -290,7 +278,6 @@ namespace PracticeBlockChain
                 Path.Combine(StateStorage, String.Join("-", block.Hash()) + ".txt"),
                 SerializeState(updatedBoard)
             );
-            UpdateDifficulty(block);
 
             return true;
         }
