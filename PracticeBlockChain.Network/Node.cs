@@ -54,17 +54,19 @@ namespace PracticeBlockChain.Network
             _routingTable.Push(GetAddress(node));
             SendRoutingTable(node);
         }
+
+        private string GetAddress(TcpClient node)
         {
-            int eachByte;
             var bytes = new Byte[256];
+            string nodeAddress = null;
 
             NetworkStream stream = node.GetStream();
-            while ((eachByte = stream.Read(bytes, 0, bytes.Length)) != 0)
-            {
-                // In this part seed node stores address of node to Rounting table.
-                var nodeAddress = Encoding.ASCII.GetString(bytes, 0, eachByte);
-                Console.WriteLine($"SeedNode Received: {nodeAddress}");
-                var address = Encoding.ASCII.GetBytes(nodeAddress);
+            int addressLength = stream.Read(bytes, 0, bytes.Length);
+            nodeAddress = Encoding.ASCII.GetString(bytes, 0, addressLength);
+            Console.WriteLine($"SeedNode Received: {nodeAddress}");
+
+            return nodeAddress;
+        }
 
                 // In this part seed node sends Rounting table to the last connected node.
                 stream.Write(address, 0, address.Length);
