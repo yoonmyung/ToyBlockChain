@@ -10,10 +10,8 @@ namespace PracticeBlockChain.Network
     {
         private readonly string _bindIP = "127.0.0.1";
         private readonly int _bindPort = 8888;
-        private readonly TcpListener _listner;
-        private readonly Queue<string> _rountingTable;
+        private Stack<string> _routingTable;
 
-        public int BindPort
         public Node(bool isSeed)
         {
             if (isSeed)
