@@ -65,6 +65,17 @@ namespace PracticeBlockChain.Network
                 stream.Write(address, 0, address.Length);
                 Console.WriteLine($"SeedNode Sent: {address}");
             }
+        private void SendRoutingTable(TcpClient node)
+        {
+            var binaryFormatter = new BinaryFormatter();
+            var memoryStream = new MemoryStream();
+
+            NetworkStream stream = node.GetStream();
+            binaryFormatter.Serialize(memoryStream, _routingTable);
+            var sizeofRoutingTable = BitConverter.GetBytes(memoryStream.Length);
+            byte[] byteArrayOfRoutingTable = memoryStream.ToArray();
+            stream.Write(sizeofRoutingTable, 0, 4);
+            stream.Write(byteArrayOfRoutingTable, 0, byteArrayOfRoutingTable.Length);
         }
 
         // Methods which node uses.
