@@ -14,26 +14,22 @@ namespace PracticeBlockChain.Network
         private readonly Queue<string> _rountingTable;
 
         public int BindPort
+        public Node(bool isSeed)
         {
-            get
+            if (isSeed)
             {
-                return _bindPort;
+                _routingTable = new Stack<string>();
+                var listener = new TcpListener(IPAddress.Parse(_bindIP), _bindPort);
+                listener.Start();
+                Listen(listener);
             }
-        }
-
-        // It's Node.
-        public Node(int port)
-        {
-            _bindPort = port;
-        }
-
-        // It's Seed node.
-        public Node()
-        {
-            var localAddress = IPAddress.Parse(_bindIP);
-            _listner = new TcpListener(localAddress, _bindPort);
-            _listner.Start();
-            Listen();
+            else
+            {
+                var client = new TcpClient();
+                client.Connect(IPAddress.Parse(_bindIP), 8888);
+                _bindPort = ((IPEndPoint)client.Client.LocalEndPoint).Port;
+                ConnectToSeedNode(client);
+            }
         }
 
         // Methods which Seed node uses.
