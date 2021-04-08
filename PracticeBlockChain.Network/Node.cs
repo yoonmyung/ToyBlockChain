@@ -105,12 +105,25 @@ namespace PracticeBlockChain.Network
 
             stream.Write(byteAddress, 0, byteAddress.Length);
             Console.WriteLine($"Node Sent: {address}");
+        private void GetRoutingTable(TcpClient node)
+        {
+            var binaryFormatter = new BinaryFormatter();
+            byte[] sizeofRoutingTableAsByte = new byte[4];
 
-            // In this part, node receives Rounting table from seed node.
-            byteAddress = new Byte[256];
-            Int32 bytes = stream.Read(byteAddress, 0, byteAddress.Length);
-            var responseData = Encoding.ASCII.GetString(byteAddress, 0, bytes);
-            Console.WriteLine($"Node Received: {responseData}");
+            NetworkStream stream = node.GetStream();
+            stream.Read(sizeofRoutingTableAsByte, 0, sizeofRoutingTableAsByte.Length); 
+            var sizeofRoutingTable = BitConverter.ToInt32(sizeofRoutingTableAsByte, 0); 
+            var routingTableAsByte = new byte[sizeofRoutingTable]; 
+            stream.Read(routingTableAsByte, 0, routingTableAsByte.Length); 
+
+            var memoryStream = new MemoryStream(routingTableAsByte); 
+            memoryStream.Position = 0; 
+            _routingTable = (Stack<string>)binaryFormatter.Deserialize(memoryStream);
+            Console.WriteLine("-----------Routing table----------");
+            foreach(string address in _routingTable)
+            {
+                Console.WriteLine(address);
+            }
         }
     }
 }
