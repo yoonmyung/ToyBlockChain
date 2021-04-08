@@ -44,7 +44,8 @@ namespace PracticeBlockChain.Network
                 Console.Write("Waiting for a connection... ");
                 var node = listener.AcceptTcpClient();
                 Console.WriteLine("Connected!");
-                PutAddressToTable(node);
+                var thread = new Thread(PutAddressToTable);
+                thread.Start(node);
             }
         }
 
