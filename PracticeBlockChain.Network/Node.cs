@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
+using System.Threading;
 
 namespace PracticeBlockChain.Network
 {
@@ -63,10 +66,6 @@ namespace PracticeBlockChain.Network
             return nodeAddress;
         }
 
-                // In this part seed node sends Rounting table to the last connected node.
-                stream.Write(address, 0, address.Length);
-                Console.WriteLine($"SeedNode Sent: {address}");
-            }
         private void SendRoutingTable(TcpClient node)
         {
             var binaryFormatter = new BinaryFormatter();
@@ -113,9 +112,10 @@ namespace PracticeBlockChain.Network
             // In this part, node gets(makes?) a client stream for reading and writing.
             // Seed node and node communicate through stream.
             NetworkStream stream = node.GetStream();
-
             stream.Write(byteAddress, 0, byteAddress.Length);
             Console.WriteLine($"Node Sent: {address}");
+        }
+
         private void GetRoutingTable(TcpClient node)
         {
             var binaryFormatter = new BinaryFormatter();
