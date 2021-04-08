@@ -24,7 +24,12 @@ namespace PracticeBlockChain.Test
 
         private static void StartSeedNode()
         {
-            var seedNode = new Node();
+            var seedNode = new Node(true);
+        }
+
+        private static void StartNode()
+        {
+            var node = new Node(false);
         }
     }
 }
