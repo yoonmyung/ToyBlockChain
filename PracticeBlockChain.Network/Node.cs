@@ -37,12 +37,12 @@ namespace PracticeBlockChain.Network
         }
 
         // Methods which Seed node uses.
-        private void Listen()
+        private void Listen(TcpListener listener)
         {
             while (true)
             {
                 Console.Write("Waiting for a connection... ");
-                var node = _listner.AcceptTcpClient();
+                var node = listener.AcceptTcpClient();
                 Console.WriteLine("Connected!");
                 PutAddressToTable(node);
             }
