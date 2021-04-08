@@ -17,8 +17,8 @@ namespace PracticeBlockChain.Test
             }
             else
             {
-                var node = new Node(int.Parse(args[0]));
-                node.ConnectToSeedNode();
+                var nodeThread = new Thread(StartNode);
+                nodeThread.Start();
             }
         }
 
