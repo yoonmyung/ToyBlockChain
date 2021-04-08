@@ -48,7 +48,12 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        private void PutAddressToTable(TcpClient node)
+        private void PutAddressToTable(object client)
+        {
+            var node = (TcpClient)client;
+            _routingTable.Push(GetAddress(node));
+            SendRoutingTable(node);
+        }
         {
             int eachByte;
             var bytes = new Byte[256];
