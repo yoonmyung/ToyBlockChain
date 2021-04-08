@@ -68,31 +68,29 @@ namespace PracticeBlockChain.Network
         }
 
         // Methods which node uses.
-        public void ConnectToSeedNode()
+        public void ConnectToSeedNode(TcpClient client)
         {
-            using (var node = new TcpClient())
-            { 
-                try
-                {
-                    node.Connect(IPAddress.Parse(_bindIP), 8888);
-                    SendAddress
-                    (
-                        node,
-                        ((IPEndPoint)node.Client.LocalEndPoint).Address.MapToIPv4().ToString() + ":" +
-                        ((IPEndPoint)node.Client.LocalEndPoint).Port.ToString()
-                    );
-                }
-                catch (ArgumentNullException e)
-                {
-                    Console.WriteLine("ArgumentNullException: {0}", e);
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine("SocketException: {0}", e);
-                }
-                Console.WriteLine("\n Press Enter to continue...");
-                Console.Read();
+            try
+            {
+                SendAddress
+                (
+                    client,
+                    ((IPEndPoint)client.Client.LocalEndPoint).Address.MapToIPv4().ToString()
+                    + ":" +
+                    _bindPort.ToString()
+                );
+                GetRoutingTable(client);
             }
+            catch (ArgumentNullException e)
+            {
+                Console.WriteLine("ArgumentNullException: {0}", e);
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine("SocketException: {0}", e);
+            }
+            Console.WriteLine("\n Press Enter to continue...");
+            Console.Read();
         }
 
         private void SendAddress(TcpClient node, String address)
