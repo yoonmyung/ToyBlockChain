@@ -19,6 +19,7 @@ namespace PracticeBlockChain.Network
         //     [ peer's address of client, is it connected with this node? ] 
         // }
         private Dictionary<string, ArrayList> _routingTable;
+        private readonly TcpListener _listener;
         private NetworkStream _stream;
 
         public Node(bool isSeed)
@@ -64,10 +65,8 @@ namespace PracticeBlockChain.Network
             while (true)
             {
                 Console.Write("Waiting for a connection... ");
-                var node = listener.AcceptTcpClient();
-                Console.WriteLine("Connected!");
-                var thread = new Thread(PutAddressToTable);
-                thread.Start(node);
+                var node = _listener.AcceptTcpClient();
+                Console.WriteLine($"request connection from {((IPEndPoint)node.Client.RemoteEndPoint).Port}!");
             }
         }
 
