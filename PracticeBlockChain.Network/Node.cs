@@ -59,8 +59,7 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        // Methods which Seed node uses.
-        private void Listen(TcpListener listener)
+        public void Listen()
         {
             while (true)
             {
@@ -70,6 +69,8 @@ namespace PracticeBlockChain.Network
             }
         }
 
+            var clientThread = new Thread(Listen);
+            clientThread.Start();
                 _client.Connect
                     (seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 _stream = _client.GetStream();
