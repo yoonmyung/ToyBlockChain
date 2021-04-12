@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Test
 {
@@ -10,26 +11,26 @@ namespace PracticeBlockChain.Test
     {
         public static void Main(string[] args)
         {
-            if (args[0].Equals("8888"))
-            {
-                var seedNodeThread = new Thread(StartSeedNode);
-                seedNodeThread.Start();
-            }
-            else
-            {
-                var nodeThread = new Thread(StartNode);
-                nodeThread.Start();
-            }
-        }
+            bool isNodeMade = false;
 
-        private static void StartSeedNode()
-        {
-            var seedNode = new Node(true);
-        }
-
-        private static void StartNode()
-        {
-            var node = new Node(false);
+            while (true)
+            {
+                if (!isNodeMade)
+                {
+                    if (args[0].Equals("8888"))
+                    {
+                        var seedNode = new Node(true);
+                        var clientThread = new Thread(seedNode.Listen);
+                        clientThread.Start();
+                    }
+                    else
+                    {
+                        var node = new Node(false);
+                        node.ConnectToNode("127.0.0.1:8888");
+                    }
+                    isNodeMade = true;
+                }
+            }
         }
     }
 }
