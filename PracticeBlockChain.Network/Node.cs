@@ -19,6 +19,7 @@ namespace PracticeBlockChain.Network
         //     [ peer's address of client, is it connected with this node? ] 
         // }
         private Dictionary<string, ArrayList> _routingTable;
+        private NetworkStream _stream;
 
         public Node(bool isSeed)
         {
@@ -70,6 +71,18 @@ namespace PracticeBlockChain.Network
             }
         }
 
+                _stream = _client.GetStream();
+
+        private void SendAddress()
+        {
+            // Node makes a client stream for reading and writing.
+            // Seed node and peer node communicate through stream.
+            Thread.Sleep(1000);
+            var byteAddress =
+                Encoding.ASCII.GetBytes(string.Format(_address[0] + "," + _address[1]));
+            _stream.Write(byteAddress, 0, byteAddress.Length);
+        }
+
         private void PutAddressToTable(object client)
         {
             var node = (TcpClient)client;
@@ -87,8 +100,7 @@ namespace PracticeBlockChain.Network
             var bytes = new Byte[256];
             string nodeAddress = null;
 
-            NetworkStream stream = node.GetStream();
-            int addressLength = stream.Read(bytes, 0, bytes.Length);
+            int addressLength = _stream.Read(bytes, 0, bytes.Length);
             nodeAddress = Encoding.ASCII.GetString(bytes, 0, addressLength);
             Console.WriteLine($"SeedNode Received: {nodeAddress}");
 
@@ -100,12 +112,11 @@ namespace PracticeBlockChain.Network
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
 
-            NetworkStream stream = node.GetStream();
-            binaryFormatter.Serialize(memoryStream, _routingTable);
-            var sizeofRoutingTable = BitConverter.GetBytes(memoryStream.Length);
-            byte[] byteArrayOfRoutingTable = memoryStream.ToArray();
-            stream.Write(sizeofRoutingTable, 0, 4);
-            stream.Write(byteArrayOfRoutingTable, 0, byteArrayOfRoutingTable.Length);
+            binaryFormatter.Serialize(memoryStream, data);
+            var sizeofData = BitConverter.GetBytes(memoryStream.Length);
+            byte[] byteArrayOfData = memoryStream.ToArray();
+            _stream.Write(sizeofData, 0, 4);
+            _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
         // Methods which node uses.
@@ -143,13 +154,6 @@ namespace PracticeBlockChain.Network
 
         private void SendAddress(TcpClient node, String address)
         {
-            Byte[] byteAddress = Encoding.ASCII.GetBytes(address);
-
-            // In this part, node gets(makes?) a client stream for reading and writing.
-            // Seed node and node communicate through stream.
-            NetworkStream stream = node.GetStream();
-            stream.Write(byteAddress, 0, byteAddress.Length);
-            Console.WriteLine($"Node Sent: {address}");
         }
 
         private void GetRoutingTable(TcpClient node)
