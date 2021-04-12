@@ -13,7 +13,12 @@ namespace PracticeBlockChain.Network
     {
         private readonly string _bindIP = "127.0.0.1";
         private readonly int _bindPort = 8888;
-        private Stack<string> _routingTable;
+        // _routingTable = 
+        // {
+        //     peer's address of listener, 
+        //     [ peer's address of client, is it connected with this node? ] 
+        // }
+        private Dictionary<string, ArrayList> _routingTable;
 
         public Node(bool isSeed)
         {
@@ -68,8 +73,13 @@ namespace PracticeBlockChain.Network
         private void PutAddressToTable(object client)
         {
             var node = (TcpClient)client;
-            _routingTable.Push(GetAddress(node));
-            SendRoutingTable(node);
+            _stream = node.GetStream();
+            string address = GetAddress(node);
+            string[] addresses = address.Split(",");
+            ArrayList arrayList = new ArrayList();
+            arrayList.Add(addresses[0]);
+            arrayList.Add(false);
+            _routingTable.Add(addresses[1], arrayList);
         }
 
         private string GetAddress(TcpClient node)
@@ -100,23 +110,30 @@ namespace PracticeBlockChain.Network
 
         // Methods which node uses.
         public void ConnectToSeedNode(TcpClient client)
+        private void GetData()
         {
-            try
+            var binaryFormatter = new BinaryFormatter();
+            byte[] sizeofDataAsByte = new byte[4];
+
+            _stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
+            var sizeofData = BitConverter.ToInt32(sizeofDataAsByte, 0);
+            var dataAsByte = new byte[sizeofData];
+            _stream.Read(dataAsByte, 0, dataAsByte.Length);
+
+            var memoryStream = new MemoryStream(dataAsByte);
+            memoryStream.Position = 0;
+            var data = binaryFormatter.Deserialize(memoryStream);
+            if (data.GetType().FullName.Contains("System.Collections.Generic.Dictionary"))
             {
-                SendAddress
-                (
-                    client,
-                    ((IPEndPoint)client.Client.LocalEndPoint).Address.MapToIPv4().ToString()
-                    + ":" +
-                    _bindPort.ToString()
-                );
-                GetRoutingTable(client);
+                _routingTable = (Dictionary<string, ArrayList>)data;
+                _routingTable[_address[1]][1] = true;
+                PrintRoutingTable();
             }
-            catch (ArgumentNullException e)
+            else
             {
-                Console.WriteLine("ArgumentNullException: {0}", e);
+                Console.WriteLine($"received from other node: {data}");
             }
-            catch (SocketException e)
+        }
             {
                 Console.WriteLine("SocketException: {0}", e);
             }
@@ -136,23 +153,16 @@ namespace PracticeBlockChain.Network
         }
 
         private void GetRoutingTable(TcpClient node)
+        private void PrintRoutingTable()
         {
-            var binaryFormatter = new BinaryFormatter();
-            byte[] sizeofRoutingTableAsByte = new byte[4];
-
-            NetworkStream stream = node.GetStream();
-            stream.Read(sizeofRoutingTableAsByte, 0, sizeofRoutingTableAsByte.Length); 
-            var sizeofRoutingTable = BitConverter.ToInt32(sizeofRoutingTableAsByte, 0); 
-            var routingTableAsByte = new byte[sizeofRoutingTable]; 
-            stream.Read(routingTableAsByte, 0, routingTableAsByte.Length); 
-
-            var memoryStream = new MemoryStream(routingTableAsByte); 
-            memoryStream.Position = 0; 
-            _routingTable = (Stack<string>)binaryFormatter.Deserialize(memoryStream);
-            Console.WriteLine("-----------Routing table----------");
-            foreach(string address in _routingTable)
+            Console.WriteLine("\n<Routing table>");
+            foreach (var address in _routingTable)
             {
-                Console.WriteLine(address);
+                Console.WriteLine
+                (
+                    $"Client: {address.Value[0]}, " +
+                    $"Listener: {address.Key}\n"
+                );
             }
         }
     }
