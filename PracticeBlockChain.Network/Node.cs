@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -192,12 +193,17 @@ namespace PracticeBlockChain.Network
                 Console.WriteLine($"received from other node: {data}");
             }
         }
+
+        private void RotateRoutingTable()
+        {
+            foreach (var address in _routingTable)
             {
-                Console.WriteLine("SocketException: {0}", e);
+                if ((bool)address.Value[1])
+                {
+                    continue;
+                }
                 ReloadPort((string)address.Key);
             }
-            Console.WriteLine("\n Press Enter to continue...");
-            Console.Read();
         }
 
         private void ReloadPort(string destinationAddress)
