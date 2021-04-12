@@ -159,15 +159,34 @@ namespace PracticeBlockChain.Network
         }
             {
                 Console.WriteLine("SocketException: {0}", e);
+                ReloadPort((string)address.Key);
             }
             Console.WriteLine("\n Press Enter to continue...");
             Console.Read();
         }
 
         private void SendAddress(TcpClient node, String address)
+        private void ReloadPort(string destinationAddress)
         {
             string[] clientAddress = _address[0].Split(":");
             IPAddress bindingIP = IPAddress.Parse(clientAddress[0]);
+            _client.Close();
+            _client.Dispose();
+            Thread.Sleep(1000);
+            Console.WriteLine("Refresh client node " + bindingIP + ":" + clientAddress[1]);
+            _client = 
+            new TcpClient
+                (
+                    new IPEndPoint(bindingIP, int.Parse(clientAddress[1]))
+                );
+            _client.Client.SetSocketOption
+            (
+                SocketOptionLevel.Socket, 
+                SocketOptionName.ReuseAddress, 
+                true
+            );
+            var clientThread = new Thread(ConnectToNode);
+            clientThread.Start(destinationAddress);
         }
 
         private void GetRoutingTable(TcpClient node)
