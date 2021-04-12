@@ -19,17 +19,36 @@ namespace PracticeBlockChain.Network
         {
             if (isSeed)
             {
-                _routingTable = new Stack<string>();
-                var listener = new TcpListener(IPAddress.Parse(_bindIP), _bindPort);
-                listener.Start();
-                Listen(listener);
+                _routingTable = new Dictionary<string, ArrayList>();
+                _client = null;
+                _listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8888);
+                _listener.Server.SetSocketOption
+                (
+                    SocketOptionLevel.Socket,
+                    SocketOptionName.ReuseAddress,
+                    true
+                );
+                _listener.Start();
             }
             else
             {
-                var client = new TcpClient();
-                client.Connect(IPAddress.Parse(_bindIP), 8888);
-                _bindPort = ((IPEndPoint)client.Client.LocalEndPoint).Port;
-                ConnectToSeedNode(client);
+                // It's peer node.
+                _listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 0);
+                _listener.Server.SetSocketOption
+                (
+                    SocketOptionLevel.Socket,
+                    SocketOptionName.ReuseAddress,
+                    true
+                );
+                _listener.Start();
+
+                _client = new TcpClient();
+                _client.Client.SetSocketOption
+                (
+                    SocketOptionLevel.Socket,
+                    SocketOptionName.ReuseAddress,
+                    true
+                );
             }
         }
 
