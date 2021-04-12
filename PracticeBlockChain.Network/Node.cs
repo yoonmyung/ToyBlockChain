@@ -11,8 +11,6 @@ namespace PracticeBlockChain.Network
 {
     public class Node
     {
-        private readonly string _bindIP = "127.0.0.1";
-        private readonly int _bindPort = 8888;
         // _routingTable = 
         // {
         //     peer's address of listener, 
@@ -21,6 +19,7 @@ namespace PracticeBlockChain.Network
         private Dictionary<string, ArrayList> _routingTable;
         private readonly TcpListener _listener;
         private NetworkStream _stream;
+        private string[] _address;
 
         public Node(bool isSeed)
         {
@@ -71,6 +70,16 @@ namespace PracticeBlockChain.Network
         }
 
                 _stream = _client.GetStream();
+                _address =
+                    new string[]
+                    {
+                        ((IPEndPoint)_client.Client.LocalEndPoint).Address.MapToIPv4().ToString() +
+                        ":" +
+                        ((IPEndPoint)_client.Client.LocalEndPoint).Port.ToString(),
+                        ((IPEndPoint)_listener.Server.LocalEndPoint).Address.MapToIPv4().ToString() +
+                        ":" +
+                        ((IPEndPoint)_listener.Server.LocalEndPoint).Port.ToString()
+                    };
 
         private void SendAddress()
         {
@@ -153,6 +162,8 @@ namespace PracticeBlockChain.Network
 
         private void SendAddress(TcpClient node, String address)
         {
+            string[] clientAddress = _address[0].Split(":");
+            IPAddress bindingIP = IPAddress.Parse(clientAddress[0]);
         }
 
         private void GetRoutingTable(TcpClient node)
