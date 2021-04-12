@@ -66,6 +66,7 @@ namespace PracticeBlockChain.Network
                 Console.Write("Waiting for a connection... ");
                 var node = _listener.AcceptTcpClient();
                 Console.WriteLine($"request connection from {((IPEndPoint)node.Client.RemoteEndPoint).Port}!");
+                PutAddressToTable(node);
             }
         }
 
@@ -151,7 +152,6 @@ namespace PracticeBlockChain.Network
 
             int addressLength = _stream.Read(bytes, 0, bytes.Length);
             nodeAddress = Encoding.ASCII.GetString(bytes, 0, addressLength);
-            Console.WriteLine($"SeedNode Received: {nodeAddress}");
 
             return nodeAddress;
         }
@@ -223,7 +223,6 @@ namespace PracticeBlockChain.Network
             clientThread.Start(destinationAddress);
         }
 
-        private void GetRoutingTable(TcpClient node)
         private void PrintRoutingTable()
         {
             Console.WriteLine("\n<Routing table>");
