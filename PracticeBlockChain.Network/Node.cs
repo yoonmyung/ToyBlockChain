@@ -69,11 +69,25 @@ namespace PracticeBlockChain.Network
             }
         }
 
+        public void ConnectToNode(object destinationAddress)
+        {
+            var nodeAddress = (string)destinationAddress;
+            var seperatedAddress = nodeAddress.Split(":");
+
             var clientThread = new Thread(Listen);
             clientThread.Start();
+            try
+            {
                 _client.Connect
                     (seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 _stream = _client.GetStream();
+                if (!(_routingTable is null))
+                {
+                    if (_routingTable.ContainsKey(nodeAddress))
+                    {
+                        _routingTable[nodeAddress][1] = true;
+                    }
+                }
                 _address =
                     new string[]
                     {
@@ -84,6 +98,20 @@ namespace PracticeBlockChain.Network
                         ":" +
                         ((IPEndPoint)_listener.Server.LocalEndPoint).Port.ToString()
                     };
+                Console.WriteLine($"connected to {nodeAddress}");
+                SendAddress();
+                GetData();
+                RotateRoutingTable();
+            }
+            catch (ArgumentNullException e)
+            {
+                Console.WriteLine($"ArgumentNullException: {e}");
+            }
+            catch (SocketException e)
+            {
+                Console.WriteLine($"SocketException: {e}");
+            }
+        }
 
         private void SendAddress()
         {
@@ -131,8 +159,6 @@ namespace PracticeBlockChain.Network
             _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
-        // Methods which node uses.
-        public void ConnectToSeedNode(TcpClient client)
         private void GetData()
         {
             var binaryFormatter = new BinaryFormatter();
