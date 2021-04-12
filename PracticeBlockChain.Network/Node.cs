@@ -133,6 +133,14 @@ namespace PracticeBlockChain.Network
             arrayList.Add(addresses[0]);
             arrayList.Add(false);
             _routingTable.Add(addresses[1], arrayList);
+            if (((IPEndPoint)_listener.Server.LocalEndPoint).Port == 8888)
+            {
+                SendData(node, _routingTable);
+            }
+            else
+            {
+            }
+            PrintRoutingTable();
         }
 
         private string GetAddress(TcpClient node)
