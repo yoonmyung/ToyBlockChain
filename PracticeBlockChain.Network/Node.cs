@@ -137,11 +137,11 @@ namespace PracticeBlockChain.Network
             _routingTable.Add(addresses[1], arrayList);
             if (((IPEndPoint)_listener.Server.LocalEndPoint).Port == 8888)
             {
-                SendData(node, _routingTable);
+                SendData(_routingTable);
             }
             else
             {
-                SendData(node, "I get the connection.");
+                SendData("I get the connection.");
             }
             PrintRoutingTable();
         }
@@ -157,7 +157,7 @@ namespace PracticeBlockChain.Network
             return nodeAddress;
         }
 
-        private void SendData(TcpClient node, object data)
+        public void SendData(object data)
         {
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
