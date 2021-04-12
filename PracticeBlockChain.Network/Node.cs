@@ -139,6 +139,7 @@ namespace PracticeBlockChain.Network
             }
             else
             {
+                SendData(node, "I get the connection.");
             }
             PrintRoutingTable();
         }
@@ -155,7 +156,7 @@ namespace PracticeBlockChain.Network
             return nodeAddress;
         }
 
-        private void SendRoutingTable(TcpClient node)
+        private void SendData(TcpClient node, object data)
         {
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
@@ -199,7 +200,6 @@ namespace PracticeBlockChain.Network
             Console.Read();
         }
 
-        private void SendAddress(TcpClient node, String address)
         private void ReloadPort(string destinationAddress)
         {
             string[] clientAddress = _address[0].Split(":");
