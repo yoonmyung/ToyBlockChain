@@ -17,6 +17,7 @@ namespace PracticeBlockChain.Network
         //     [ peer's address of client, is it connected with this node? ] 
         // }
         private Dictionary<string, ArrayList> _routingTable;
+        private TcpClient _client;
         private readonly TcpListener _listener;
         private NetworkStream _stream;
         private string[] _address;
@@ -69,6 +70,8 @@ namespace PracticeBlockChain.Network
             }
         }
 
+                _client.Connect
+                    (seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 _stream = _client.GetStream();
                 _address =
                     new string[]
