@@ -103,6 +103,12 @@ namespace PracticeBlockChain.Network
             }
         }
 
+        public void DisconnectToNode()
+        {
+            _client.Close();
+            _client.Dispose();
+        }
+
         private void SendAddress()
         {
             // Node makes a client stream for reading and writing.
@@ -192,29 +198,6 @@ namespace PracticeBlockChain.Network
                 }
                 ReloadPort((string)address.Key);
             }
-        }
-
-        private void ReloadPort(string destinationAddress)
-        {
-            string[] clientAddress = _address[0].Split(":");
-            IPAddress bindingIP = IPAddress.Parse(clientAddress[0]);
-            _client.Close();
-            _client.Dispose();
-            Thread.Sleep(1000);
-            Console.WriteLine("Refresh client node " + bindingIP + ":" + clientAddress[1]);
-            _client = 
-            new TcpClient
-                (
-                    new IPEndPoint(bindingIP, int.Parse(clientAddress[1]))
-                );
-            _client.Client.SetSocketOption
-            (
-                SocketOptionLevel.Socket, 
-                SocketOptionName.ReuseAddress, 
-                true
-            );
-            var clientThread = new Thread(ConnectToNode);
-            clientThread.Start(destinationAddress);
         }
 
         private void PrintRoutingTable()
