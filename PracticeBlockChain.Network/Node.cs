@@ -60,14 +60,15 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        public void Listen()
+        private void Listen()
         {
             while (true)
             {
-                Console.Write("Waiting for a connection... ");
+                Console.WriteLine("Waiting for a connection... ");
                 var node = _listener.AcceptTcpClient();
-                Console.WriteLine($"request connection from {((IPEndPoint)node.Client.RemoteEndPoint).Port}!");
-                PutAddressToTable(node);
+                _stream = node.GetStream();
+                PutAddressToRoutingtable(node);
+                SendData(_routingTable);
             }
         }
 
