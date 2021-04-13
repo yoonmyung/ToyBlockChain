@@ -84,7 +84,10 @@ namespace PracticeBlockChain.Network
 
             try
             {
+                _client.Connect(seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 _stream = _client.GetStream();
+                Console.WriteLine($"Connected to {neighborNode}");
+                
                 return true;
             }
             catch (ArgumentNullException e)
@@ -117,9 +120,6 @@ namespace PracticeBlockChain.Network
 
         private void SendAddress()
         {
-            // Node makes a client stream for reading and writing.
-            // Seed node and peer node communicate through stream.
-            Thread.Sleep(1000);
             var byteAddress =
                 Encoding.ASCII.GetBytes(string.Format(_address[0] + "," + _address[1]));
             _stream.Write(byteAddress, 0, byteAddress.Length);
@@ -183,7 +183,7 @@ namespace PracticeBlockChain.Network
             }
             else
             {
-                Console.WriteLine($"received from other node: {data}");
+                Console.WriteLine($"Received from neighbornode: {data}");
             }
         }
 
@@ -207,9 +207,12 @@ namespace PracticeBlockChain.Network
                 Console.WriteLine
                 (
                     $"Client: {address.Value[0]}, " +
-                    $"Listener: {address.Key}\n"
+                    $"Listener: {address.Key}"
                 );
             }
+            Console.WriteLine();
+        }
+
         public void StartConnection(string destinationAddress)
         {
             string[] clientAddress = _address[0].Split(":");
