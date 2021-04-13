@@ -88,6 +88,17 @@ namespace PracticeBlockChain.Network
             }
             catch (SocketException e)
             {
+                if (e.SocketErrorCode.ToString().Equals("ConnectionRefused"))
+                {
+                    // Node you try to connect no longer connected to you.
+                    _routingTable.Remove(neighborNode);
+                    PrintRoutingTable();
+                }
+                else
+                {
+                    Console.WriteLine($"SocketException: {e}");
+                }
+
                 return false;
             }
         }
@@ -216,6 +227,10 @@ namespace PracticeBlockChain.Network
                     $"Client: {address.Value[0]}, " +
                     $"Listener: {address.Key}\n"
                 );
+            }
+            if (!ConnectToNode(destinationAddress))
+            {
+                Console.WriteLine("Fail to connect to " + destinationAddress);
             }
         }
     }
