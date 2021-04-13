@@ -18,7 +18,7 @@ namespace PracticeBlockChain.Network
         // }
         private Dictionary<string, string> _routingTable;
         private TcpClient _client;
-        private readonly TcpListener _listener;
+        private TcpListener _listener;
         private NetworkStream _stream;
         private string[] _address;
 
