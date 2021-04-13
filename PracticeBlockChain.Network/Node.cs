@@ -24,39 +24,45 @@ namespace PracticeBlockChain.Network
 
         public Node(bool isSeed, int port)
         {
-            if (isSeed)
-            {
-                _routingTable = new Dictionary<string, ArrayList>();
-                _client = null;
-                _listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 8888);
-                _listener.Server.SetSocketOption
-                (
-                    SocketOptionLevel.Socket,
-                    SocketOptionName.ReuseAddress,
-                    true
-                );
-                _listener.Start();
-            }
-            else
-            {
-                // It's peer node.
-                _listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 0);
-                _listener.Server.SetSocketOption
-                (
-                    SocketOptionLevel.Socket,
-                    SocketOptionName.ReuseAddress,
-                    true
-                );
-                _listener.Start();
+            string seedNodeAddress = "127.0.0.1:65000";
 
-                _client = new TcpClient();
-                _client.Client.SetSocketOption
-                (
-                    SocketOptionLevel.Socket,
-                    SocketOptionName.ReuseAddress,
-                    true
-                );
+            SetListener("127.0.0.1", port);
+            if (!isSeed)
+            {
+                _address =
+                    new string[]
+                    {
+                        "127.0.0.1:" + (port + 1).ToString(), "127.0.0.1:" + port.ToString()
+                    };
+                // It's peer node.
+                StartConnection(seedNodeAddress);
             }
+        }
+
+        private void SetListener(string IP, int port)
+        {
+            _routingTable = new Dictionary<string, string>();
+            _listener = new TcpListener(IPAddress.Parse(IP), port);
+            _listener.Server.SetSocketOption
+            (
+                SocketOptionLevel.Socket,
+                SocketOptionName.ReuseAddress,
+                true
+            );
+            _listener.Start();
+            var listeningThread = new Thread(Listen);
+            listeningThread.Start();
+        }
+
+        private void SetClient(string IP, int port)
+        {
+            _client = new TcpClient(new IPEndPoint(IPAddress.Parse(IP), port));
+            _client.Client.SetSocketOption
+            (
+                SocketOptionLevel.Socket,
+                SocketOptionName.ReuseAddress,
+                true
+            );
         }
 
         private void Listen()
@@ -189,7 +195,7 @@ namespace PracticeBlockChain.Network
                 {
                     continue;
                 }
-                ReloadPort((string)address.Key);
+                StartConnection(address.Key);
             }
         }
 
