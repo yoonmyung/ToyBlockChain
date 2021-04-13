@@ -79,13 +79,16 @@ namespace PracticeBlockChain.Network
             try
             {
                 _stream = _client.GetStream();
+                return true;
             }
             catch (ArgumentNullException e)
             {
                 Console.WriteLine($"ArgumentNullException: {e}");
+                return false;
             }
             catch (SocketException e)
             {
+                return false;
             }
         }
 
