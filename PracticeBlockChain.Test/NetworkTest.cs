@@ -1,9 +1,4 @@
 ﻿using PracticeBlockChain.Network;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Test
 {
@@ -12,23 +7,19 @@ namespace PracticeBlockChain.Test
         public static void Main(string[] args)
         {
             bool isNodeMade = false;
+            Node node = null;
 
             while (true)
             {
                 if (!isNodeMade)
                 {
-                    if (args[0].Equals("8888"))
-                    {
-                        var seedNode = new Node(true);
-                        var clientThread = new Thread(seedNode.Listen);
-                        clientThread.Start();
-                    }
-                    else
-                    {
-                        var node = new Node(false);
-                        node.ConnectToNode("127.0.0.1:8888");
-                    }
+                    node = new Node(isSeed: bool.Parse(args[0]), port: int.Parse(args[1]));
                     isNodeMade = true;
+                    if (!bool.Parse(args[0]))
+                    {
+                        // It's peer node.
+                        node.RotateRoutingTable();
+                    }
                 }
             }
         }
