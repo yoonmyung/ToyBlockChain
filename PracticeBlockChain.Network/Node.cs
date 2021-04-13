@@ -22,7 +22,7 @@ namespace PracticeBlockChain.Network
         private NetworkStream _stream;
         private string[] _address;
 
-        public Node(bool isSeed)
+        public Node(bool isSeed, int port)
         {
             if (isSeed)
             {
