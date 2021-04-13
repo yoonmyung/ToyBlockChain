@@ -211,10 +211,21 @@ namespace PracticeBlockChain.Network
                     $"Listener: {address.Key}\n"
                 );
             }
+        public void StartConnection(string destinationAddress)
+        {
+            string[] clientAddress = _address[0].Split(":");
+
+            SetClient(clientAddress[0], int.Parse(clientAddress[1]));
             if (!ConnectToNode(destinationAddress))
             {
                 Console.WriteLine("Fail to connect to " + destinationAddress);
             }
+            else
+            {
+                SendAddress();
+                GetData();
+            }
+            DisconnectToNode();
         }
     }
 }
