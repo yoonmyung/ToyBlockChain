@@ -187,7 +187,7 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        private void RotateRoutingTable()
+        public void RotateRoutingTable()
         {
             foreach (var address in _routingTable)
             {
