@@ -73,8 +73,8 @@ namespace PracticeBlockChain.Network
 
         private bool ConnectToNode(object destinationAddress)
         {
-            var nodeAddress = (string)destinationAddress;
-            var seperatedAddress = nodeAddress.Split(":");
+            var neighborNode = (string)destinationAddress;
+            var seperatedAddress = neighborNode.Split(":");
 
             var clientThread = new Thread(Listen);
             clientThread.Start();
