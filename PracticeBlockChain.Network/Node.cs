@@ -76,34 +76,9 @@ namespace PracticeBlockChain.Network
             var neighborNode = (string)destinationAddress;
             var seperatedAddress = neighborNode.Split(":");
 
-            var clientThread = new Thread(Listen);
-            clientThread.Start();
             try
             {
-                _client.Connect
-                    (seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 _stream = _client.GetStream();
-                if (!(_routingTable is null))
-                {
-                    if (_routingTable.ContainsKey(nodeAddress))
-                    {
-                        _routingTable[nodeAddress][1] = true;
-                    }
-                }
-                _address =
-                    new string[]
-                    {
-                        ((IPEndPoint)_client.Client.LocalEndPoint).Address.MapToIPv4().ToString() +
-                        ":" +
-                        ((IPEndPoint)_client.Client.LocalEndPoint).Port.ToString(),
-                        ((IPEndPoint)_listener.Server.LocalEndPoint).Address.MapToIPv4().ToString() +
-                        ":" +
-                        ((IPEndPoint)_listener.Server.LocalEndPoint).Port.ToString()
-                    };
-                Console.WriteLine($"connected to {nodeAddress}");
-                SendAddress();
-                GetData();
-                RotateRoutingTable();
             }
             catch (ArgumentNullException e)
             {
@@ -111,7 +86,6 @@ namespace PracticeBlockChain.Network
             }
             catch (SocketException e)
             {
-                Console.WriteLine($"SocketException: {e}");
             }
         }
 
