@@ -71,7 +71,7 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        public void ConnectToNode(object destinationAddress)
+        private bool ConnectToNode(object destinationAddress)
         {
             var nodeAddress = (string)destinationAddress;
             var seperatedAddress = nodeAddress.Split(":");
