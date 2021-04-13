@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -173,8 +172,7 @@ namespace PracticeBlockChain.Network
             var data = binaryFormatter.Deserialize(memoryStream);
             if (data.GetType().FullName.Contains("System.Collections.Generic.Dictionary"))
             {
-                _routingTable = (Dictionary<string, ArrayList>)data;
-                _routingTable[_address[1]][1] = true;
+                _routingTable = (Dictionary<string, string>)data;
                 PrintRoutingTable();
             }
             else
@@ -187,7 +185,7 @@ namespace PracticeBlockChain.Network
         {
             foreach (var address in _routingTable)
             {
-                if ((bool)address.Value[1])
+                if (address.Value.Equals(_address[0]))
                 {
                     continue;
                 }
