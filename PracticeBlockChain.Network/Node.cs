@@ -17,7 +17,7 @@ namespace PracticeBlockChain.Network
         //     peer's address of listener, 
         //     [ peer's address of client, is it connected with this node? ] 
         // }
-        private Dictionary<string, ArrayList> _routingTable;
+        private Dictionary<string, string> _routingTable;
         private TcpClient _client;
         private readonly TcpListener _listener;
         private NetworkStream _stream;
@@ -120,27 +120,6 @@ namespace PracticeBlockChain.Network
             _stream.Write(byteAddress, 0, byteAddress.Length);
         }
 
-        private void PutAddressToTable(object client)
-        {
-            var node = (TcpClient)client;
-            _stream = node.GetStream();
-            string address = GetAddress(node);
-            string[] addresses = address.Split(",");
-            ArrayList arrayList = new ArrayList();
-            arrayList.Add(addresses[0]);
-            arrayList.Add(false);
-            _routingTable.Add(addresses[1], arrayList);
-            if (((IPEndPoint)_listener.Server.LocalEndPoint).Port == 8888)
-            {
-                SendData(_routingTable);
-            }
-            else
-            {
-                SendData("I get the connection.");
-            }
-            PrintRoutingTable();
-        }
-
         private string GetAddress(TcpClient node)
         {
             var bytes = new Byte[256];
@@ -150,6 +129,21 @@ namespace PracticeBlockChain.Network
             nodeAddress = Encoding.ASCII.GetString(bytes, 0, addressLength);
 
             return nodeAddress;
+        }
+
+        private void PutAddressToRoutingtable(object client)
+        {
+            var node = (TcpClient)client;
+
+            string nodeAddress = GetAddress(node);
+            string[] seperatedAddress = nodeAddress.Split(",");
+            Console.WriteLine($"Connected client: {seperatedAddress[0]}");
+            if (!(_routingTable.ContainsKey(seperatedAddress[1])))
+            {
+                _routingTable.Add(seperatedAddress[1], seperatedAddress[0]);
+            }
+
+            PrintRoutingTable();
         }
 
         public void SendData(object data)
