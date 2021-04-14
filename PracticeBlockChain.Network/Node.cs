@@ -118,13 +118,6 @@ namespace PracticeBlockChain.Network
             _client.Dispose();
         }
 
-        private void SendAddress()
-        {
-            var byteAddress =
-                Encoding.ASCII.GetBytes(string.Format(_address[0] + "," + _address[1]));
-            _stream.Write(byteAddress, 0, byteAddress.Length);
-        }
-
         private string GetAddress(TcpClient node)
         {
             var bytes = new Byte[256];
@@ -224,7 +217,6 @@ namespace PracticeBlockChain.Network
             }
             else
             {
-                SendAddress();
                 GetData();
             }
             DisconnectToNode();
