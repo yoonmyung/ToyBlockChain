@@ -35,7 +35,11 @@ namespace PracticeBlockChain.Network
                         "127.0.0.1:" + (port + 1).ToString(), "127.0.0.1:" + port.ToString()
                     };
                 // It's peer node.
-                StartConnection(seedNodeAddress);
+                StartConnection
+                (
+                    destinationAddress: seedNodeAddress,
+                    dataToSend: string.Format(_address[0] + "," + _address[1])
+                );
             }
         }
 
@@ -170,7 +174,11 @@ namespace PracticeBlockChain.Network
                 {
                     continue;
                 }
-                StartConnection(address.Key);
+                StartConnection
+                (
+                    destinationAddress: address.Key,
+                    dataToSend: string.Format(_address[0] + "," + _address[1])
+                );
             }
         }
 
@@ -188,7 +196,7 @@ namespace PracticeBlockChain.Network
             Console.WriteLine();
         }
 
-        public void StartConnection(string destinationAddress)
+        public void StartConnection(string destinationAddress, object dataToSend)
         {
             string[] clientAddress = _address[0].Split(":");
 
