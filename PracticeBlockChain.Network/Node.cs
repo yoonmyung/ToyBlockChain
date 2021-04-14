@@ -112,7 +112,7 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        public void DisconnectToNode()
+        private void DisconnectToNode()
         {
             _client.Close();
             _client.Dispose();
