@@ -118,22 +118,10 @@ namespace PracticeBlockChain.Network
             _client.Dispose();
         }
 
-        private string GetAddress(TcpClient node)
-        {
-            var bytes = new Byte[256];
-            string nodeAddress = null;
-
-            int addressLength = _stream.Read(bytes, 0, bytes.Length);
-            nodeAddress = Encoding.ASCII.GetString(bytes, 0, addressLength);
-
-            return nodeAddress;
-        }
-
         private void PutAddressToRoutingtable(object client)
         {
             var node = (TcpClient)client;
 
-            string nodeAddress = GetAddress(node);
             string[] seperatedAddress = nodeAddress.Split(",");
             Console.WriteLine($"Connected client: {seperatedAddress[0]}");
             if (!(_routingTable.ContainsKey(seperatedAddress[1])))
