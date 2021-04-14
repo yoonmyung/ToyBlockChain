@@ -163,7 +163,7 @@ namespace PracticeBlockChain.Network
             _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
-        private void GetData()
+        public object GetData()
         {
             var binaryFormatter = new BinaryFormatter();
             byte[] sizeofDataAsByte = new byte[4];
