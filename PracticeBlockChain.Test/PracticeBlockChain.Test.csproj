@@ -1,22 +1,33 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
 
     <IsPackable>false</IsPackable>
 
-    <StartupObject>PracticeBlockChain.Test.TictactoeGameTest</StartupObject>
+    <StartupObject></StartupObject>
 
     <OutputType>WinExe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
+    <WarningLevel>0</WarningLevel>
   </PropertyGroup>
 
+	<PropertyGroup>
+		<GenerateProgramFile>false</GenerateProgramFile>
+	</PropertyGroup>	
+
   <ItemGroup>
+    <Compile Remove="AddressExtensionsTest.cs" />
     <Compile Remove="BlockChainTest.cs" />
     <Compile Remove="CryptoTest.cs" />
+    <Compile Remove="FileWatcher.cs" />
+    <Compile Remove="KeyTest.cs" />
+    <Compile Remove="StorageTest.cs" />
+    <Compile Remove="StoringFullGameTest.cs" />
+    <Compile Remove="TictactoeGameTest.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,6 +47,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj" />
+    <ProjectReference Include="..\PracticeBlockChain.Network\PracticeBlockChain.Network.csproj" />
     <ProjectReference Include="..\PracticeBlockChain.TicTacToeGame\PracticeBlockChain.TicTacToeGame.csproj" />
     <ProjectReference Include="..\PracticeBlockchain\PracticeBlockChain.csproj" />
   </ItemGroup>
