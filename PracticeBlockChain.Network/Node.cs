@@ -199,6 +199,7 @@ namespace PracticeBlockChain.Network
             }
             else
             {
+                SendData(dataToSend);
                 _routingTable = (Dictionary<string, string>)GetData();
             }
             DisconnectToNode();
