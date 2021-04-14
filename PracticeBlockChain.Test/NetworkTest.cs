@@ -6,21 +6,11 @@ namespace PracticeBlockChain.Test
     {
         public static void Main(string[] args)
         {
-            bool isNodeMade = false;
-            Node node = null;
-
-            while (true)
+            var node = new Node(isSeed: bool.Parse(args[0]), port: int.Parse(args[1]));
+            if (!bool.Parse(args[0]))
             {
-                if (!isNodeMade)
-                {
-                    node = new Node(isSeed: bool.Parse(args[0]), port: int.Parse(args[1]));
-                    isNodeMade = true;
-                    if (!bool.Parse(args[0]))
-                    {
-                        // It's peer node.
-                        node.RotateRoutingTable();
-                    }
-                }
+                // It's peer node.
+                node.RotateRoutingTable();
             }
         }
     }
