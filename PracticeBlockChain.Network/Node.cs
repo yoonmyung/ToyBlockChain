@@ -122,6 +122,7 @@ namespace PracticeBlockChain.Network
         {
             var node = (TcpClient)client;
 
+            string nodeAddress = (string)GetData();
             string[] seperatedAddress = nodeAddress.Split(",");
             Console.WriteLine($"Connected client: {seperatedAddress[0]}");
             if (!(_routingTable.ContainsKey(seperatedAddress[1])))
@@ -157,15 +158,8 @@ namespace PracticeBlockChain.Network
             var memoryStream = new MemoryStream(dataAsByte);
             memoryStream.Position = 0;
             var data = binaryFormatter.Deserialize(memoryStream);
-            if (data.GetType().FullName.Contains("System.Collections.Generic.Dictionary"))
-            {
-                _routingTable = (Dictionary<string, string>)data;
-                PrintRoutingTable();
-            }
-            else
-            {
-                Console.WriteLine($"Received from neighbornode: {data}");
-            }
+
+            return data;
         }
 
         public void RotateRoutingTable()
@@ -205,7 +199,7 @@ namespace PracticeBlockChain.Network
             }
             else
             {
-                GetData();
+                _routingTable = (Dictionary<string, string>)GetData();
             }
             DisconnectToNode();
         }
