@@ -151,7 +151,7 @@ namespace PracticeBlockChain.Network
             PrintRoutingTable();
         }
 
-        public void SendData(object data)
+        private void SendData(object data)
         {
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
