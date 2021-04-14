@@ -206,7 +206,7 @@ namespace PracticeBlockChain.Network
             {
                 Console.WriteLine
                 (
-                    $"Client: {address.Value[0]}, " +
+                    $"Client: {address.Value}, " +
                     $"Listener: {address.Key}"
                 );
             }
