@@ -4,15 +4,26 @@ namespace PracticeBlockChain.Test
 {
     public class NetworkTest
     {
-        public static void Main(string[] args)
         private static object lockThis = new object();
 
+        public static async Task Main(string[] args)
         {
+            var blockChain = new BlockChain();
+            var privateKey = new PrivateKey();
             var node = new Node(isSeed: bool.Parse(args[0]), port: int.Parse(args[1]));
+
             if (!bool.Parse(args[0]))
             {
                 // It's peer node.
                 node.RotateRoutingTable();
+                while (true)
+                {
+                    var sendingActionThread =
+                        new Thread(() => SendAction(lockThis, privateKey, blockChain, node));
+                    sendingActionThread.Priority = ThreadPriority.Lowest;
+                    sendingActionThread.Start();
+                    await Task.Delay(10000);
+                }
             }
         }
 
