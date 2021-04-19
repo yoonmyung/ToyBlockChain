@@ -1,11 +1,13 @@
+using PracticeBlockChain.Cryptography;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Network
 {
@@ -27,19 +29,30 @@ namespace PracticeBlockChain.Network
             string seedNodeAddress = "127.0.0.1:65000";
 
             SetListener("127.0.0.1", port);
+            _address =
+                new string[]
+                {
+                        "127.0.0.1:" + (port + 1).ToString(), "127.0.0.1:" + port.ToString()
+                };
             if (!isSeed)
             {
-                _address =
-                    new string[]
-                    {
-                        "127.0.0.1:" + (port + 1).ToString(), "127.0.0.1:" + port.ToString()
-                    };
                 // It's peer node.
                 StartConnection
                 (
                     destinationAddress: seedNodeAddress,
                     dataToSend: string.Format(_address[0] + "," + _address[1])
                 );
+            }
+        }
+
+        public string[] Address
+        {
+            get
+            {
+                return _address;
+            }
+        }
+
             }
         }
 
