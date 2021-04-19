@@ -13,22 +13,20 @@ namespace PracticeBlockChain.Network
 {
     public class Node
     {
-        // _routingTable = 
-        // {
-        //     peer's address of listener, 
-        //     [ peer's address of client, is it connected with this node? ] 
-        // }
+        // _routingTable = { peer's address of listener, peer's address of client }
         private Dictionary<string, string> _routingTable;
         private TcpClient _client;
         private TcpListener _listener;
         private NetworkStream _stream;
         private string[] _address;
+        private List<byte[]> _stage;
 
         public Node(bool isSeed, int port)
         {
             string seedNodeAddress = "127.0.0.1:65000";
 
             SetListener("127.0.0.1", port);
+            _stage = new List<byte[]>();
             _address =
                 new string[]
                 {
@@ -42,6 +40,9 @@ namespace PracticeBlockChain.Network
                     destinationAddress: seedNodeAddress,
                     dataToSend: string.Format(_address[0] + "," + _address[1])
                 );
+                _routingTable = (Dictionary<string, string>)GetData().Result;
+                PrintRoutingTable();
+                DisconnectToNode();
             }
         }
 
@@ -53,6 +54,11 @@ namespace PracticeBlockChain.Network
             }
         }
 
+        public Dictionary<string, string> RoutingTable
+        {
+            get
+            {
+                return _routingTable;
             }
         }
 
@@ -135,12 +141,9 @@ namespace PracticeBlockChain.Network
             _client.Dispose();
         }
 
-        private void PutAddressToRoutingtable(object client)
+        private void PutAddressToRoutingtable(string address)
         {
-            var node = (TcpClient)client;
-
-            string nodeAddress = (string)GetData();
-            string[] seperatedAddress = nodeAddress.Split(",");
+            string[] seperatedAddress = address.Split(",");
             Console.WriteLine($"Connected client: {seperatedAddress[0]}");
             if (!(_routingTable.ContainsKey(seperatedAddress[1])))
             {
@@ -200,11 +203,7 @@ namespace PracticeBlockChain.Network
             Console.WriteLine("\n<Routing table>");
             foreach (var address in _routingTable)
             {
-                Console.WriteLine
-                (
-                    $"Client: {address.Value}, " +
-                    $"Listener: {address.Key}"
-                );
+                Console.WriteLine($"Client: {address.Value}, Listener: {address.Key}");
             }
             Console.WriteLine();
         }
