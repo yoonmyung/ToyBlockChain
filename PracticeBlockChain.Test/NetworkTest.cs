@@ -1,4 +1,9 @@
-﻿using PracticeBlockChain.Network;
+﻿using PracticeBlockChain.Cryptography;
+using PracticeBlockChain.Network;
+using System;
+using System.Collections;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Test
 {
@@ -15,7 +20,12 @@ namespace PracticeBlockChain.Test
             if (!bool.Parse(args[0]))
             {
                 // It's peer node.
-                node.RotateRoutingTable();
+                node.RotateRoutingTable
+                (
+                    string.Format(node.Address[0] + "," + node.Address[1])
+                );
+                while (node.RoutingTable.Count < 2) ;
+                
                 while (true)
                 {
                     var sendingActionThread =

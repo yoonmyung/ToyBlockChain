@@ -1,10 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Crypto.Signers;
 
 namespace PracticeBlockChain.Cryptography
 {
+    [Serializable]
     public class PublicKey
     {
         public PublicKey(byte[] publicKey)
