@@ -5,6 +5,8 @@ namespace PracticeBlockChain.Test
     public class NetworkTest
     {
         public static void Main(string[] args)
+        private static object lockThis = new object();
+
         {
             var node = new Node(isSeed: bool.Parse(args[0]), port: int.Parse(args[1]));
             if (!bool.Parse(args[0]))
