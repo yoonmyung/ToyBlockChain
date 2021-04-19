@@ -15,9 +15,7 @@ namespace PracticeBlockChain.Network
     {
         // _routingTable = { peer's address of listener, peer's address of client }
         private Dictionary<string, string> _routingTable;
-        private TcpClient _client;
         private TcpListener _listener;
-        private NetworkStream _stream;
         private string[] _address;
         private List<byte[]> _stage;
 
@@ -35,14 +33,21 @@ namespace PracticeBlockChain.Network
             if (!isSeed)
             {
                 // It's peer node.
-                StartConnection
-                (
-                    destinationAddress: seedNodeAddress,
-                    dataToSend: string.Format(_address[0] + "," + _address[1])
-                );
-                _routingTable = (Dictionary<string, string>)GetData().Result;
+                string[] clientAddress = _address[0].Split(":");
+                TcpClient client = SetClient(clientAddress[0], int.Parse(clientAddress[1]));
+                NetworkStream stream = GetStream(seedNodeAddress, client);
+                if (stream is null)
+                {
+                    Console.WriteLine("Fail to connect to " + seedNodeAddress);
+                }
+                else
+                {
+                    SendData(string.Format(_address[0] + "," + _address[1]), stream);
+                    Console.WriteLine($"client sent data {string.Format(_address[0] + "," + _address[1]).GetType().FullName}!");
+                }
+                _routingTable = (Dictionary<string, string>)GetData(stream).Result;
                 PrintRoutingTable();
-                DisconnectToNode();
+                DisconnectToNode(client, stream);
             }
         }
 
@@ -78,15 +83,17 @@ namespace PracticeBlockChain.Network
             listeningThread.Start();
         }
 
-        private void SetClient(string IP, int port)
+        private TcpClient SetClient(string IP, int port)
         {
-            _client = new TcpClient(new IPEndPoint(IPAddress.Parse(IP), port));
-            _client.Client.SetSocketOption
+            var client = new TcpClient(new IPEndPoint(IPAddress.Parse(IP), port));
+            client.Client.SetSocketOption
             (
                 SocketOptionLevel.Socket,
                 SocketOptionName.ReuseAddress,
                 true
             );
+
+            return client;
         }
 
         public void Listen()
@@ -101,8 +108,8 @@ namespace PracticeBlockChain.Network
         private async void ListenNodeAsync(object obj)
         {
             var client = (TcpClient)obj;
-            _stream = client.GetStream();
-            var data = await GetData();
+            NetworkStream stream = client.GetStream();
+            var data = await GetData(stream);
             string dataType = data.GetType().FullName;
 
             if (dataType.Contains("String"))
@@ -111,7 +118,7 @@ namespace PracticeBlockChain.Network
                 PutAddressToRoutingtable((string)data);
                 if (_address[1].Split(":")[1].Contains("65000"))
                 {
-                    SendData(_routingTable);
+                    SendData(_routingTable, stream);
                 }
             }
             else if (dataType.Contains("ArrayList"))
@@ -130,27 +137,25 @@ namespace PracticeBlockChain.Network
             {
                 // Data from transporting block
             }
-            _stream.Close();
-            client.Close();
+            DisconnectToNode(client, stream);
         }
 
-        private bool ConnectToNode(object destinationAddress)
+        private NetworkStream GetStream(object destinationAddress, TcpClient client)
         {
             var neighborNode = (string)destinationAddress;
             var seperatedAddress = neighborNode.Split(":");
 
             try
             {
-                _client.Connect(seperatedAddress[0], int.Parse(seperatedAddress[1]));
-                _stream = _client.GetStream();
+                client.Connect(seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 Console.WriteLine($"Connected to {neighborNode}");
                 
-                return true;
+                return client.GetStream();
             }
             catch (ArgumentNullException e)
             {
                 Console.WriteLine($"ArgumentNullException: {e}");
-                return false;
+                return null;
             }
             catch (SocketException e)
             {
@@ -165,14 +170,15 @@ namespace PracticeBlockChain.Network
                     Console.WriteLine($"SocketException: {e}");
                 }
 
-                return false;
+                return null;
             }
         }
 
-        private void DisconnectToNode()
+        private void DisconnectToNode(TcpClient client, NetworkStream stream)
         {
-            _client.Close();
-            _client.Dispose();
+            stream.Close();
+            client.Close();
+            client.Dispose();
         }
 
         private void PutAddressToRoutingtable(string address)
@@ -187,7 +193,7 @@ namespace PracticeBlockChain.Network
             PrintRoutingTable();
         }
 
-        private async void SendData(object data)
+        private async void SendData(object data, NetworkStream stream)
         {
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
@@ -195,19 +201,19 @@ namespace PracticeBlockChain.Network
             binaryFormatter.Serialize(memoryStream, data);
             var sizeofData = BitConverter.GetBytes(memoryStream.Length);
             byte[] byteArrayOfData = memoryStream.ToArray();
-            _stream.Write(sizeofData, 0, 4);
-            _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
+            stream.Write(sizeofData, 0, 4);
+            stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
-        public async Task<object> GetData()
+        public async Task<object> GetData(NetworkStream stream)
         {
             var binaryFormatter = new BinaryFormatter();
             byte[] sizeofDataAsByte = new byte[4];
 
-            _stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
+            stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
             var sizeofData = BitConverter.ToInt32(sizeofDataAsByte, 0);
             var dataAsByte = new byte[sizeofData];
-            _stream.Read(dataAsByte, 0, dataAsByte.Length);
+            stream.Read(dataAsByte, 0, dataAsByte.Length);
 
             var memoryStream = new MemoryStream(dataAsByte);
             memoryStream.Position = 0;
@@ -218,6 +224,8 @@ namespace PracticeBlockChain.Network
 
         public async void RotateRoutingTable(object data)
         {
+            string[] clientAddress = _address[0].Split(":");
+
             foreach (var address in _routingTable)
             {
                 if (address.Value.Equals(_address[0]))
@@ -229,12 +237,18 @@ namespace PracticeBlockChain.Network
                     await Task.Delay(2000);
                     Console.WriteLine("Send transaction");
                 }
-                StartConnection
-                (
-                    destinationAddress: address.Key,
-                    dataToSend: data
-                );
-                DisconnectToNode();
+                TcpClient client = SetClient(clientAddress[0], int.Parse(clientAddress[1]));
+                NetworkStream stream = GetStream(address.Key, client);
+                if (stream is null)
+                {
+                    Console.WriteLine("Fail to connect to " + address.Key);
+                }
+                else
+                {
+                    SendData(data, stream);
+                    Console.WriteLine($"client sent data {data.GetType().FullName}!");
+                }
+                DisconnectToNode(client, stream);
             }
         }
 
@@ -246,22 +260,6 @@ namespace PracticeBlockChain.Network
                 Console.WriteLine($"Client: {address.Value}, Listener: {address.Key}");
             }
             Console.WriteLine();
-        }
-
-        public void StartConnection(string destinationAddress, object dataToSend)
-        {
-            string[] clientAddress = _address[0].Split(":");
-
-            SetClient(clientAddress[0], int.Parse(clientAddress[1]));
-            if (!ConnectToNode(destinationAddress))
-            {
-                Console.WriteLine("Fail to connect to " + destinationAddress);
-            }
-            else
-            {
-                SendData(dataToSend);
-                Console.WriteLine($"client sent data {dataToSend.GetType().FullName}!");
-            }
         }
     }
 }
