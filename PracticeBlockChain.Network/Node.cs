@@ -74,6 +74,7 @@ namespace PracticeBlockChain.Network
             );
             _listener.Start();
             var listeningThread = new Thread(Listen);
+            listeningThread.Priority = ThreadPriority.Highest;
             listeningThread.Start();
         }
 
@@ -88,16 +89,49 @@ namespace PracticeBlockChain.Network
             );
         }
 
-        private void Listen()
+        public void Listen()
         {
             while (true)
             {
-                Console.WriteLine("Waiting for a connection... ");
-                var node = _listener.AcceptTcpClient();
-                _stream = node.GetStream();
-                PutAddressToRoutingtable(node);
-                SendData(_routingTable);
+                var client = _listener.AcceptTcpClient();
+                Task.Factory.StartNew(ListenNodeAsync, client);
             }
+        }
+
+        private async void ListenNodeAsync(object obj)
+        {
+            var client = (TcpClient)obj;
+            _stream = client.GetStream();
+            var data = await GetData();
+            string dataType = data.GetType().FullName;
+
+            if (dataType.Contains("String"))
+            {
+                // Listener gets address from another node.
+                PutAddressToRoutingtable((string)data);
+                if (_address[1].Split(":")[1].Contains("65000"))
+                {
+                    SendData(_routingTable);
+                }
+            }
+            else if (dataType.Contains("ArrayList"))
+            {
+                // Data from transporting transaction(action)
+                var dataArray = (ArrayList)data;
+                var publicKey = new PublicKey((byte[])dataArray[0]);
+
+                if (publicKey.Verify((byte[])dataArray[2], (byte[])dataArray[1]))
+                {
+                    _stage.Add((byte[])data);
+                    Console.WriteLine($"Get transaction from 127.0.0.1:{((IPEndPoint)client.Client.RemoteEndPoint).Port}");
+                }
+            }
+            else if (dataType.Contains("Block"))
+            {
+                // Data from transporting block
+            }
+            _stream.Close();
+            client.Close();
         }
 
         private bool ConnectToNode(object destinationAddress)
@@ -153,7 +187,7 @@ namespace PracticeBlockChain.Network
             PrintRoutingTable();
         }
 
-        private void SendData(object data)
+        private async void SendData(object data)
         {
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
@@ -165,7 +199,7 @@ namespace PracticeBlockChain.Network
             _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
-        public object GetData()
+        public async Task<object> GetData()
         {
             var binaryFormatter = new BinaryFormatter();
             byte[] sizeofDataAsByte = new byte[4];
@@ -182,7 +216,7 @@ namespace PracticeBlockChain.Network
             return data;
         }
 
-        public void RotateRoutingTable()
+        public async void RotateRoutingTable(object data)
         {
             foreach (var address in _routingTable)
             {
@@ -190,11 +224,17 @@ namespace PracticeBlockChain.Network
                 {
                     continue;
                 }
+                if (data.GetType().FullName.Contains("ArrayList"))
+                {
+                    await Task.Delay(2000);
+                    Console.WriteLine("Send transaction");
+                }
                 StartConnection
                 (
                     destinationAddress: address.Key,
-                    dataToSend: string.Format(_address[0] + "," + _address[1])
+                    dataToSend: data
                 );
+                DisconnectToNode();
             }
         }
 
@@ -220,9 +260,8 @@ namespace PracticeBlockChain.Network
             else
             {
                 SendData(dataToSend);
-                _routingTable = (Dictionary<string, string>)GetData();
+                Console.WriteLine($"client sent data {dataToSend.GetType().FullName}!");
             }
-            DisconnectToNode();
         }
     }
 }
