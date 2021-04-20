@@ -9,7 +9,7 @@ namespace PracticeBlockChain.Test
 {
     public class NetworkTest
     {
-        private static object lockThis = new object();
+        private static Mutex _mutex;
 
         public static async Task Main(string[] args)
         {
@@ -27,29 +27,24 @@ namespace PracticeBlockChain.Test
                 while (node.RoutingTable.Count < 2) ;
                 
                 while (true)
+                for (var i = 0; i < 5; i++)
                 {
-                    var sendingActionThread =
-                        new Thread(() => SendAction(lockThis, privateKey, blockChain, node));
-                    sendingActionThread.Priority = ThreadPriority.Lowest;
-                    sendingActionThread.Start();
-                    await Task.Delay(10000);
+                    SynchronizeTransportingAction(privateKey, blockChain, node);
                 }
             }
         }
 
-        private static void SendAction
+        private static void SynchronizeTransportingAction
         (
-            object lockThis, PrivateKey privateKey, BlockChain blockChain, Node node
+            PrivateKey privateKey, BlockChain blockChain, Node node
         )
         {
-            lock (lockThis)
-            {
-                var action = MakeAction(privateKey, blockChain);
-                node.RotateRoutingTable
-                (
-                    new ArrayList { privateKey.PublicKey.Format(true), action.Signature, action.ActionId }
-                );
-            }
+            _mutex.WaitOne();
+            var actionTask =
+                Task.Factory.StartNew(() => TransportAction(privateKey, blockChain, node));
+            actionTask.Wait();
+            _mutex.ReleaseMutex();
+        }
         }
 
         private static Action MakeAction(PrivateKey privateKey, BlockChain blockChain)
