@@ -222,6 +222,7 @@ namespace PracticeBlockChain.Network
             return data;
         }
 
+        // Transport transaction to all of nodes from routing table.
         public async void RotateRoutingTable(object data)
         {
             string[] clientAddress = _address[0].Split(":");
