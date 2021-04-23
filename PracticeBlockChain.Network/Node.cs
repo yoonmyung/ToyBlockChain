@@ -11,7 +11,8 @@ namespace PracticeBlockChain.Network
 {
     public class Node
     {
-        private TcpListener _listener;
+        // Each node has a listener object.
+        // Whenever another node sends connection, a node takes it by its listener object.
         // Each node stores other nodes' address which it has connected.
         // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
         private Dictionary<int, int> _routingTable;
@@ -28,7 +29,6 @@ namespace PracticeBlockChain.Network
             private set;
         }
 
-            SetListener("127.0.0.1", port);
             if (!isSeed)
         public Dictionary<int, int> RoutingTable
         {
@@ -38,18 +38,17 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        private void SetListener(string IP, int port)
+        private TcpListener Listener
         {
-            _routingTable = new Dictionary<string, string>();
-            _listener = new TcpListener(IPAddress.Parse(IP), port);
-            _listener.Server.SetSocketOption
+            get;
+            set;
+        }
+
             (
                 SocketOptionLevel.Socket,
                 SocketOptionName.ReuseAddress,
                 true
             );
-            _listener.Start();
-            var listeningThread = new Thread(Listen);
             listeningThread.Start();
         }
 
@@ -85,8 +84,6 @@ namespace PracticeBlockChain.Network
         {
             while (true)
             {
-                Console.WriteLine("Waiting for a connection... ");
-                var node = _listener.AcceptTcpClient();
                 PutAddressToRoutingtable(node);
                             new IPEndPoint(IPAddress.Parse(_ip), Address.client)
             }
