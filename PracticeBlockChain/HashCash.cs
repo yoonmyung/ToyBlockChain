@@ -6,7 +6,7 @@ namespace PracticeBlockChain
 {
     public static class HashCash
     {
-        public static Nonce CalculateHash(BlockChain blockChain)
+        public static (Nonce nonce, long difficulty) CalculateBlockHash
         {
             var hashAlgo = SHA256.Create();
             var difficulty = DifficultyUpdater.UpdateDifficulty(blockChain);
@@ -24,7 +24,7 @@ namespace PracticeBlockChain
             } 
             while (hashDigest < difficulty);
 
-            return nonce;
+            return (nonce, difficulty);
         }
     }
 }
