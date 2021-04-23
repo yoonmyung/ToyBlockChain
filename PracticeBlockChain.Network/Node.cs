@@ -170,19 +170,32 @@ namespace PracticeBlockChain.Network
         }
 
             var client = SetClient();
+            client.Connect(_ip, destinationPort);
+                NetworkStream stream = GetStream(destinationPort, client);
+                if (stream is null)
+                {
+                    Console.WriteLine("Fail to connect to " + destinationPort);
+                }
+                else
+                {
+                    SendData(data, stream);
+                }
         }
 
-        private bool ConnectToNode(object destinationAddress)
+        private NetworkStream GetStream
+            (object destinationAddress, TcpClient client)
         {
-            var neighborNode = (string)destinationAddress;
-            var seperatedAddress = neighborNode.Split(":");
+            var destinationPort = (int)destinationAddress;
 
             try
             {
+                return client.GetStream();
             }
             catch (ArgumentNullException e)
             {
                 Console.WriteLine($"ArgumentNullException: {e}");
+
+                return null;
             }
             catch (SocketException e)
             {
@@ -194,15 +207,20 @@ namespace PracticeBlockChain.Network
                 }
                 else
                 {
-                    Console.WriteLine($"SocketException: {e}");
+                    // Console.WriteLine($"SocketException: {e}");
                 }
 
-                return false;
+                return null;
             }
         }
 
         private void DisconnectClient(TcpClient client, NetworkStream stream)
         {
+            if (!(stream is null))
+            {
+                stream.Flush();
+                stream.Close();
+            }
             client.Close();
             client.Dispose();
         }
@@ -225,22 +243,25 @@ namespace PracticeBlockChain.Network
             PrintRoutingTable();
         }
 
-        private void SendData(object data)
+        private void SendData(object data, NetworkStream stream)
         {
             var binaryFormatter = new BinaryFormatter();
             var memoryStream = new MemoryStream();
-
             binaryFormatter.Serialize(memoryStream, data);
             var sizeofData = BitConverter.GetBytes(memoryStream.Length);
             byte[] byteArrayOfData = memoryStream.ToArray();
+            stream.Write(sizeofData, 0, 4);
+            stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
-        public object GetData()
+        public object GetData(NetworkStream stream)
         {
             var binaryFormatter = new BinaryFormatter();
             byte[] sizeofDataAsByte = new byte[4];
+            stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
             var sizeofData = BitConverter.ToInt32(sizeofDataAsByte, 0);
             var dataAsByte = new byte[sizeofData];
+            stream.Read(dataAsByte, 0, dataAsByte.Length);
             var memoryStream = new MemoryStream(dataAsByte);
             memoryStream.Position = 0;
             var data = binaryFormatter.Deserialize(memoryStream);
