@@ -5,6 +5,7 @@ using Org.BouncyCastle.Crypto.Signers;
 
 namespace PracticeBlockChain.Cryptography
 {
+    [Serializable]
     public class PublicKey
     {
         public PublicKey(byte[] publicKey)
