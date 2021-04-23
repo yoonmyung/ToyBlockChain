@@ -165,7 +165,7 @@ namespace PracticeBlockChain.Network
             return data;
         }
 
-        public void RotateRoutingTable()
+        public void RotateRoutingTable(object data)
         {
             foreach (var address in _routingTable)
             {
@@ -173,10 +173,7 @@ namespace PracticeBlockChain.Network
                 {
                     continue;
                 }
-                StartConnection
-                (
-                    destinationAddress: address.Key,
-                );
+                Send(address.Value, data);
             }
         }
 
