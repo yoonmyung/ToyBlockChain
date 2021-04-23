@@ -231,13 +231,10 @@ namespace PracticeBlockChain.Network
             client.Dispose();
         }
 
-        private void PutAddressToRoutingtable(object client)
+        private void PutAddressToRoutingtable(string address)
         {
-            var node = (TcpClient)client;
+            string[] seperatedAddress = address.Split(",");
 
-            string nodeAddress = (string)GetData();
-            string[] seperatedAddress = nodeAddress.Split(",");
-            Console.WriteLine($"Connected client: {seperatedAddress[0]}");
             if (!(_routingTable.ContainsKey(int.Parse(seperatedAddress[0]))))
             {
                 _routingTable.Add
@@ -294,10 +291,7 @@ namespace PracticeBlockChain.Network
             foreach (var address in _routingTable)
             {
                 Console.WriteLine
-                (
-                    $"Client: {address.Value}, " +
-                    $"Listener: {address.Key}"
-                );
+                    ($"Client: {address.Key}, Listener: {address.Value}");
             }
             Console.WriteLine();
         }
