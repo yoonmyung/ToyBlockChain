@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Numerics;
 using System.Security.Cryptography;
@@ -7,8 +8,11 @@ namespace PracticeBlockChain
     public static class HashCash
     {
         public static (Nonce nonce, long difficulty) CalculateBlockHash
+        (
+            BlockChain blockChain
+        )
         {
-            var hashAlgo = SHA256.Create();
+            var hashAlgorithm = SHA256.Create();
             var difficulty = DifficultyUpdater.UpdateDifficulty(blockChain);
             BigInteger result;
             BigInteger target;
@@ -18,7 +22,7 @@ namespace PracticeBlockChain
             {
                 nonce = Nonce.GenerateNonce();
                 byte[] hashInput =
-                    blockChain.TipBlock.Serialize()
+                    blockChain.TipBlock.BlockHeader.Serialize()
                     .Concat(nonce.NonceValue)
                     .ToArray();
                 byte[] hash = hashAlgorithm.ComputeHash(hashInput);
