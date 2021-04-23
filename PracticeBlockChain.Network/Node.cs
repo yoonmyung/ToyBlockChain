@@ -17,12 +17,15 @@ namespace PracticeBlockChain.Network
         // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
         private Dictionary<int, int> _routingTable;
 
-        public Node(bool isSeed, int port)
+        private const string _ip = "127.0.0.1";
+        private const int _seedPort = 65000;
+
+        public Node(int port)
         {
-            string seedNodeAddress = "127.0.0.1:65000";
             SetListener(port);
             _routingTable = new Dictionary<int, int>();
             Address = (client: port + 1, listener: port);
+        }
 
         public (int client, int listener) Address
         {
