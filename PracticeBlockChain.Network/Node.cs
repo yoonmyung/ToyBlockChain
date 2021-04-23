@@ -139,6 +139,13 @@ namespace PracticeBlockChain.Network
                     );
                 }
             }
+            else if (dataType.Contains("Byte"))
+            {
+                // Get data from transporting block.
+                // Add validation code.
+                Console.WriteLine("Get block!");
+                // Add block to chain.
+            }
         }
 
         private TcpClient SetClient()
