@@ -20,6 +20,7 @@ namespace PracticeBlockChain.Network
         public Node(bool isSeed, int port)
         {
             string seedNodeAddress = "127.0.0.1:65000";
+            SetListener(port);
             _routingTable = new Dictionary<int, int>();
             Address = (client: port + 1, listener: port);
 
@@ -44,21 +45,60 @@ namespace PracticeBlockChain.Network
             set;
         }
 
+        private void SetListener(int port)
+        {
+            Listener = new TcpListener(IPAddress.Parse(_ip), port);
+            Listener.Server.SetSocketOption
             (
                 SocketOptionLevel.Socket,
                 SocketOptionName.ReuseAddress,
                 true
             );
+        }
+
+        public void StartListener()
+        {
+            Listener.Start();
+            var listeningThread = 
+                new Thread
+                (
+                    () =>
+                    {
+                        while (true)
+                        {
+                            Listen();
+                        }
+                    }
+                 );
             listeningThread.Start();
         }
 
+        public void StopListener()
         {
+            Listener.Stop();
+        }
+
+        public void Listen()
+        {
+            Console.WriteLine("Waiting for a connection. . .");
+            var client = Listener.AcceptTcpClient();
+            Console.WriteLine
             (
-                SocketOptionLevel.Socket,
-                SocketOptionName.ReuseAddress,
-                true
+                "Listener: Connected to " +
+                ((IPEndPoint)client.Client.RemoteEndPoint).Port
             );
+            Receive(client);
+            DisconnectClient(client, client.GetStream());
+        }
+
+        private void Receive(object obj)
+        {
+            var client = (TcpClient)obj;
             var stream = GetStream(Address.listener, client);
+
+            var data = GetData(stream);
+            string dataType = data.GetType().FullName;
+
             if (dataType.Contains("String"))
             {
                 // Gets address from another node.
