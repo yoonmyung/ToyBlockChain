@@ -10,7 +10,8 @@ namespace PracticeBlockChain
         {
             var hashAlgo = SHA256.Create();
             var difficulty = DifficultyUpdater.UpdateDifficulty(blockChain);
-            BigInteger hashDigest;
+            BigInteger result;
+            BigInteger target;
             Nonce nonce = null;
 
             do
@@ -20,9 +21,19 @@ namespace PracticeBlockChain
                     blockChain.TipBlock.Serialize()
                     .Concat(nonce.NonceValue)
                     .ToArray();
-                hashDigest = new BigInteger(hashAlgo.ComputeHash(hashInput));
+                byte[] hash = hashAlgorithm.ComputeHash(hashInput);
+
+                var maxTargetBytes = new byte[hash.Length + 1];
+                maxTargetBytes[hash.Length] = 0x01;
+                var maxTarget = new BigInteger(maxTargetBytes);
+                target = maxTarget / difficulty;
+
+                var hashInputBytes = new byte[hash.Length + 1];
+                Buffer.BlockCopy(hash, 0, hashInputBytes, 0, hash.Length);
+                Buffer.BlockCopy(new byte[] { 0 }, 0, hashInputBytes, hash.Length, 1);
+                result = new BigInteger(hashInputBytes);
             } 
-            while (hashDigest < difficulty);
+            while (result > target);
 
             return (nonce, difficulty);
         }
