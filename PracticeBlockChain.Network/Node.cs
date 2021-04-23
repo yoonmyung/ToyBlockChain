@@ -169,8 +169,13 @@ namespace PracticeBlockChain.Network
             return client;
         }
 
+        public void Send(int destinationPort, object data)
+        {
             var client = SetClient();
             client.Connect(_ip, destinationPort);
+            if (client.Connected)
+            {
+                Console.WriteLine($"Client: Connected to {destinationPort}");
                 NetworkStream stream = GetStream(destinationPort, client);
                 if (stream is null)
                 {
@@ -180,6 +185,7 @@ namespace PracticeBlockChain.Network
                 {
                     SendData(data, stream);
                 }
+            }
         }
 
         private NetworkStream GetStream
