@@ -14,21 +14,26 @@ namespace PracticeBlockChain
             //Libplanet/Blockchain/Policies/BlockPolicy.cs/GetNextBlockDifficulty 함수 참조 
             var previousBlock = blockChain.TipBlock;
             Block prevPreviousBlock = null;
-            try
+
+            if (blockChain.TipBlock.BlockHeader.PreviousHash is null)
             {
-                prevPreviousBlock = blockChain.GetBlock(blockChain.TipBlock.PreviousHash);
-            }
-            catch (Exception e)
-            {
+                // It's genesis block.
                 return _minimumDifficulty;
             }
-            TimeSpan timeInterval = previousBlock.TimeStamp - prevPreviousBlock.TimeStamp;
+            prevPreviousBlock =
+                blockChain.GetBlock(blockChain.TipBlock.BlockHeader.PreviousHash);
+            TimeSpan timeInterval = 
+                previousBlock.BlockHeader.TimeStamp 
+                - prevPreviousBlock.BlockHeader.TimeStamp;
             var multiplier =
                 1 - (timeInterval.TotalMilliseconds / _difficultyBoundDivisor);
-            var offset = previousBlock.Difficulty / _minimumDifficulty;
+            var offset = previousBlock.BlockHeader.Difficulty / _minimumDifficulty;
             multiplier = Math.Max(multiplier, _minimumMultiplier);
             long nextDifficulty = 
-                Convert.ToInt64(previousBlock.Difficulty + (offset * multiplier));
+                Convert.ToInt64
+                (
+                    previousBlock.BlockHeader.Difficulty + (offset * multiplier)
+                );
             nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
             
             return nextDifficulty;
