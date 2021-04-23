@@ -11,17 +11,15 @@ namespace PracticeBlockChain.Network
 {
     public class Node
     {
-        // _routingTable = 
-        // {
-        //     peer's address of listener, 
-        //     [ peer's address of client, is it connected with this node? ] 
-        // }
-        private Dictionary<string, string> _routingTable;
         private TcpListener _listener;
+        // Each node stores other nodes' address which it has connected.
+        // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
+        private Dictionary<int, int> _routingTable;
 
         public Node(bool isSeed, int port)
         {
             string seedNodeAddress = "127.0.0.1:65000";
+            _routingTable = new Dictionary<int, int>();
             Address = (client: port + 1, listener: port);
 
         public (int client, int listener) Address
@@ -32,12 +30,11 @@ namespace PracticeBlockChain.Network
 
             SetListener("127.0.0.1", port);
             if (!isSeed)
+        public Dictionary<int, int> RoutingTable
+        {
+            get
             {
-                // It's peer node.
-                StartConnection
-                (
-                    destinationAddress: seedNodeAddress,
-                );
+                return _routingTable;
             }
         }
 
@@ -63,7 +60,25 @@ namespace PracticeBlockChain.Network
                 true
             );
             var stream = GetStream(Address.listener, client);
+            if (dataType.Contains("String"))
+            {
+                // Gets address from another node.
+                PutAddressToRoutingtable((string)data);
                 if (Address.listener.Equals(_seedPort))
+                {
+                    Send
+                    (
+                        _routingTable[((IPEndPoint)client.Client.RemoteEndPoint).Port], 
+                        _routingTable
+                    );
+                }
+            }
+            else if (dataType.Contains("Dictionary"))
+            {
+                // Get routing table from seed.
+                _routingTable = (Dictionary<int, int>)data;
+                PrintRoutingTable();
+            }
         }
 
         private void Listen()
@@ -73,7 +88,6 @@ namespace PracticeBlockChain.Network
                 Console.WriteLine("Waiting for a connection... ");
                 var node = _listener.AcceptTcpClient();
                 PutAddressToRoutingtable(node);
-                SendData(_routingTable);
                             new IPEndPoint(IPAddress.Parse(_ip), Address.client)
             }
         }
@@ -94,8 +108,8 @@ namespace PracticeBlockChain.Network
             {
                 if (e.SocketErrorCode.ToString().Equals("ConnectionRefused"))
                 {
-                    // Node you try to connect no longer connected to you.
-                    _routingTable.Remove(neighborNode);
+                    // Node which you try to connect no longer connects to you.
+                    _routingTable.Remove(destinationPort + 1);
                     PrintRoutingTable();
                 }
                 else
@@ -117,11 +131,14 @@ namespace PracticeBlockChain.Network
             string nodeAddress = (string)GetData();
             string[] seperatedAddress = nodeAddress.Split(",");
             Console.WriteLine($"Connected client: {seperatedAddress[0]}");
-            if (!(_routingTable.ContainsKey(seperatedAddress[1])))
+            if (!(_routingTable.ContainsKey(int.Parse(seperatedAddress[0]))))
             {
-                _routingTable.Add(seperatedAddress[1], seperatedAddress[0]);
+                _routingTable.Add
+                (
+                    int.Parse(seperatedAddress[0]), 
+                    int.Parse(seperatedAddress[1])
+                );
             }
-
             PrintRoutingTable();
         }
 
@@ -188,7 +205,6 @@ namespace PracticeBlockChain.Network
             else
             {
                 SendData(dataToSend);
-                _routingTable = (Dictionary<string, string>)GetData();
             }
             DisconnectToNode();
         }
