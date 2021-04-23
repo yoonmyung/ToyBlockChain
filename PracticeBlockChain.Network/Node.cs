@@ -18,7 +18,6 @@ namespace PracticeBlockChain.Network
         // }
         private Dictionary<string, string> _routingTable;
         private TcpListener _listener;
-        private NetworkStream _stream;
         private string[] _address;
 
         public Node(bool isSeed, int port)
@@ -71,7 +70,6 @@ namespace PracticeBlockChain.Network
             {
                 Console.WriteLine("Waiting for a connection... ");
                 var node = _listener.AcceptTcpClient();
-                _stream = node.GetStream();
                 PutAddressToRoutingtable(node);
                 SendData(_routingTable);
             }
@@ -84,15 +82,10 @@ namespace PracticeBlockChain.Network
 
             try
             {
-                _stream = _client.GetStream();
-                Console.WriteLine($"Connected to {neighborNode}");
-                
-                return true;
             }
             catch (ArgumentNullException e)
             {
                 Console.WriteLine($"ArgumentNullException: {e}");
-                return false;
             }
             catch (SocketException e)
             {
@@ -137,20 +130,14 @@ namespace PracticeBlockChain.Network
             binaryFormatter.Serialize(memoryStream, data);
             var sizeofData = BitConverter.GetBytes(memoryStream.Length);
             byte[] byteArrayOfData = memoryStream.ToArray();
-            _stream.Write(sizeofData, 0, 4);
-            _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
         }
 
         public object GetData()
         {
             var binaryFormatter = new BinaryFormatter();
             byte[] sizeofDataAsByte = new byte[4];
-
-            _stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
             var sizeofData = BitConverter.ToInt32(sizeofDataAsByte, 0);
             var dataAsByte = new byte[sizeofData];
-            _stream.Read(dataAsByte, 0, dataAsByte.Length);
-
             var memoryStream = new MemoryStream(dataAsByte);
             memoryStream.Position = 0;
             var data = binaryFormatter.Deserialize(memoryStream);
