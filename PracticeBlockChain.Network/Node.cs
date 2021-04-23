@@ -120,13 +120,35 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        private void Listen()
+        private TcpClient SetClient()
         {
+            TcpClient client = null;
             while (true)
             {
-                PutAddressToRoutingtable(node);
+                try
+                {
+                    client =
+                        new TcpClient
+                        (
                             new IPEndPoint(IPAddress.Parse(_ip), Address.client)
+                        );
+                    client.Client.SetSocketOption
+                    (
+                        SocketOptionLevel.Socket,
+                        SocketOptionName.ReuseAddress,
+                        true
+                    );
+                    break;
+                }
+                catch (SocketException e) 
+                { 
+                }
             }
+
+            return client;
+        }
+
+            var client = SetClient();
         }
 
         private bool ConnectToNode(object destinationAddress)
@@ -158,7 +180,10 @@ namespace PracticeBlockChain.Network
             }
         }
 
+        private void DisconnectClient(TcpClient client, NetworkStream stream)
         {
+            client.Close();
+            client.Dispose();
         }
 
         private void PutAddressToRoutingtable(object client)
