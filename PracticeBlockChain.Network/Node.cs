@@ -17,7 +17,6 @@ namespace PracticeBlockChain.Network
         //     [ peer's address of client, is it connected with this node? ] 
         // }
         private Dictionary<string, string> _routingTable;
-        private TcpClient _client;
         private TcpListener _listener;
         private NetworkStream _stream;
         private string[] _address;
@@ -58,10 +57,7 @@ namespace PracticeBlockChain.Network
             listeningThread.Start();
         }
 
-        private void SetClient(string IP, int port)
         {
-            _client = new TcpClient(new IPEndPoint(IPAddress.Parse(IP), port));
-            _client.Client.SetSocketOption
             (
                 SocketOptionLevel.Socket,
                 SocketOptionName.ReuseAddress,
@@ -88,7 +84,6 @@ namespace PracticeBlockChain.Network
 
             try
             {
-                _client.Connect(seperatedAddress[0], int.Parse(seperatedAddress[1]));
                 _stream = _client.GetStream();
                 Console.WriteLine($"Connected to {neighborNode}");
                 
@@ -116,10 +111,7 @@ namespace PracticeBlockChain.Network
             }
         }
 
-        private void DisconnectToNode()
         {
-            _client.Close();
-            _client.Dispose();
         }
 
         private void PutAddressToRoutingtable(object client)
