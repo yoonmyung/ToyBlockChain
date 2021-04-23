@@ -83,10 +83,6 @@ namespace PracticeBlockChain
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
 
-            if (!(GetAction is null))
-            {
-                componentsToSerialize.Add("signature", GetAction.Signature);
-            }
             binFormatter.Serialize(mStream, componentsToSerialize);
 
             return ByteArrayConverter.Compress(mStream.ToArray());
