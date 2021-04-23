@@ -15,7 +15,7 @@ namespace PracticeBlockChain
 
             do
             {
-                nonce = new NonceGenerator().GenerateNonce();
+                nonce = Nonce.GenerateNonce();
                 byte[] hashInput =
                     blockChain.TipBlock.Serialize()
                     .Concat(nonce.NonceValue)
