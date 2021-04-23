@@ -167,6 +167,7 @@ namespace PracticeBlockChain.Network
 
         public void RotateRoutingTable(object data)
         {
+            while (_routingTable.Count < 1) ;
             foreach (var address in _routingTable)
             {
                 if (address.Key.Equals(Address.client))
