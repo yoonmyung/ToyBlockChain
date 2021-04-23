@@ -191,20 +191,5 @@ namespace PracticeBlockChain.Network
             }
             Console.WriteLine();
         }
-
-        public void StartConnection(string destinationAddress, object dataToSend)
-        {
-
-            SetClient(clientAddress[0], int.Parse(clientAddress[1]));
-            if (!ConnectToNode(destinationAddress))
-            {
-                Console.WriteLine("Fail to connect to " + destinationAddress);
-            }
-            else
-            {
-                SendData(dataToSend);
-            }
-            DisconnectToNode();
-        }
     }
 }
