@@ -18,25 +18,25 @@ namespace PracticeBlockChain.Network
         // }
         private Dictionary<string, string> _routingTable;
         private TcpListener _listener;
-        private string[] _address;
 
         public Node(bool isSeed, int port)
         {
             string seedNodeAddress = "127.0.0.1:65000";
+            Address = (client: port + 1, listener: port);
+
+        public (int client, int listener) Address
+        {
+            get;
+            private set;
+        }
 
             SetListener("127.0.0.1", port);
             if (!isSeed)
             {
-                _address =
-                    new string[]
-                    {
-                        "127.0.0.1:" + (port + 1).ToString(), "127.0.0.1:" + port.ToString()
-                    };
                 // It's peer node.
                 StartConnection
                 (
                     destinationAddress: seedNodeAddress,
-                    dataToSend: string.Format(_address[0] + "," + _address[1])
                 );
             }
         }
@@ -62,6 +62,8 @@ namespace PracticeBlockChain.Network
                 SocketOptionName.ReuseAddress,
                 true
             );
+            var stream = GetStream(Address.listener, client);
+                if (Address.listener.Equals(_seedPort))
         }
 
         private void Listen()
@@ -72,6 +74,7 @@ namespace PracticeBlockChain.Network
                 var node = _listener.AcceptTcpClient();
                 PutAddressToRoutingtable(node);
                 SendData(_routingTable);
+                            new IPEndPoint(IPAddress.Parse(_ip), Address.client)
             }
         }
 
@@ -149,14 +152,13 @@ namespace PracticeBlockChain.Network
         {
             foreach (var address in _routingTable)
             {
-                if (address.Value.Equals(_address[0]))
+                if (address.Key.Equals(Address.client))
                 {
                     continue;
                 }
                 StartConnection
                 (
                     destinationAddress: address.Key,
-                    dataToSend: string.Format(_address[0] + "," + _address[1])
                 );
             }
         }
@@ -177,7 +179,6 @@ namespace PracticeBlockChain.Network
 
         public void StartConnection(string destinationAddress, object dataToSend)
         {
-            string[] clientAddress = _address[0].Split(":");
 
             SetClient(clientAddress[0], int.Parse(clientAddress[1]));
             if (!ConnectToNode(destinationAddress))
