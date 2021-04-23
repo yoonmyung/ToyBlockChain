@@ -1,18 +1,21 @@
+using PracticeBlockChain.Cryptography;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading;
 
 namespace PracticeBlockChain.Network
-{
+{ 
     public class Node
     {
         // Each node has a listener object.
         // Whenever another node sends connection, a node takes it by its listener object.
+        // Also node can send connection by making client object
+        // and connect it to destination node's listener object.
         // Each node stores other nodes' address which it has connected.
         // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
         private Dictionary<int, int> _routingTable;
@@ -35,7 +38,6 @@ namespace PracticeBlockChain.Network
             private set;
         }
 
-            if (!isSeed)
         public Dictionary<int, int> RoutingTable
         {
             get
