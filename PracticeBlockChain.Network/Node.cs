@@ -16,6 +16,7 @@ namespace PracticeBlockChain.Network
         // Each node stores other nodes' address which it has connected.
         // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
         private Dictionary<int, int> _routingTable;
+        private List<byte[]> _stage;
 
         private const string _ip = "127.0.0.1";
         private const int _seedPort = 65000;
@@ -23,6 +24,7 @@ namespace PracticeBlockChain.Network
         public Node(int port)
         {
             SetListener(port);
+            _stage = new List<byte[]>();
             _routingTable = new Dictionary<int, int>();
             Address = (client: port + 1, listener: port);
         }
@@ -120,6 +122,22 @@ namespace PracticeBlockChain.Network
                 // Get routing table from seed.
                 _routingTable = (Dictionary<int, int>)data;
                 PrintRoutingTable();
+            }
+            else if (dataType.Contains("ArrayList"))
+            {
+                // Get data from transporting transaction(action).
+                var dataArray = (ArrayList)data;
+                var publicKey = new PublicKey((byte[])dataArray[0]);
+
+                if (publicKey.Verify((byte[])dataArray[2], (byte[])dataArray[1]))
+                {
+                    _stage.Add((byte[])dataArray[2]);
+                    Console.WriteLine
+                    (
+                        $"Get transaction from " +
+                        $"{((IPEndPoint)client.Client.RemoteEndPoint).Port}"
+                    );
+                }
             }
         }
 
