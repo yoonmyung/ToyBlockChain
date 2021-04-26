@@ -41,5 +41,22 @@ namespace PracticeBlockChain
 
             return (nonce, difficulty);
         }
+
+        public static bool IsValid(BlockHeader blockHeader)
+        {
+            var hashAlgorithm = SHA256.Create();
+            byte[] hash = hashAlgorithm.ComputeHash(blockHeader.Serialize());
+            var maxTargetBytes = new byte[hash.Length + 1];
+            maxTargetBytes[hash.Length] = 0x01;
+            var maxTarget = new BigInteger(maxTargetBytes);
+            var target = maxTarget / blockHeader.Difficulty;
+
+            var hashInputBytes = new byte[hash.Length + 1];
+            Buffer.BlockCopy(hash, 0, hashInputBytes, 0, hash.Length);
+            Buffer.BlockCopy(new byte[] { 0 }, 0, hashInputBytes, hash.Length, 1);
+            var result = new BigInteger(hashInputBytes);
+
+            return result > target;
+        }
     }
 }
