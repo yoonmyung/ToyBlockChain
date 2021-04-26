@@ -4,7 +4,7 @@ namespace PracticeBlockChain
 {
     public static class DifficultyUpdater
     {
-        public static readonly long _minimumDifficulty = 1024;
+        public static readonly long _minimumDifficulty = 55000;
         public static readonly TimeSpan _blockInterval = TimeSpan.FromMilliseconds(10000);
         public static readonly long _difficultyBoundDivisor = 128;
         public const long _minimumMultiplier = -99;
