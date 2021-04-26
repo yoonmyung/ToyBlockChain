@@ -52,5 +52,32 @@ namespace PracticeBlockChain
 
             return ByteArrayConverter.Compress(mStream.ToArray());
         }
+
+        public bool IsValid()
+        {
+            var blockHash = new BigInteger(this.BlockHeader.Hash());
+
+            if (this.BlockHeader.Difficulty < 0)
+            {
+                Console.WriteLine(1);
+                return false;
+            }
+            else if (!(HashCash.IsValid(this.BlockHeader)))
+            {
+                Console.WriteLine(3);
+                return false;
+            }
+            else if 
+            (
+                this.BlockHeader.Index > 0 && 
+                this.BlockHeader.PreviousHash is null
+            )
+            {
+                Console.WriteLine(4);
+                return false;
+            }
+
+            return true;
+        }
     }
 }
