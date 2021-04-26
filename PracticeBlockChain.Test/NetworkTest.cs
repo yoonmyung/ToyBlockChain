@@ -9,14 +9,14 @@ namespace PracticeBlockChain.Test
     public class NetworkTest
     {
         private const int _seedPort = 65000;
+        private static string _playerStorage;
 
         public static void Main(string[] args)
         {
             var nodeType = args[0];
             var blockChain = new BlockChain();
-            var privateKey = new PrivateKey();
-
             Node node;
+            PrivateKey privateKey = null;
 
             if (nodeType.Equals("seed"))
             {
@@ -26,6 +26,40 @@ namespace PracticeBlockChain.Test
             else
             {
                 node = new Node(port: int.Parse(args[1]));
+                try
+                {
+                    if (Directory.Exists(Path.Combine(_playerStorage, args[2])))
+                    {
+                        keyValue = args[2];
+                        privateKey = new PrivateKey
+                        (
+                            args[2].Split("-").Select(x => Convert.ToByte(x)).ToArray()
+                        );
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid private key.");
+                        return;
+                    }
+                }
+                catch (IndexOutOfRangeException e)
+                {
+                    privateKey = new PrivateKey();
+                    foreach (byte byteValue in privateKey.ByteArray)
+                    {
+                        keyValue += byteValue.ToString();
+                        keyValue += "-";
+                    }
+                    Directory.CreateDirectory
+                    (
+                        Path.Combine(_playerStorage, keyValue)
+                    );
+                }
+                finally
+                {
+                    _playerStorage = Path.Combine(_playerStorage, keyValue);
+                }
+                var blockChain = new BlockChain(_playerStorage);
                 node.StartListener();
                 node.Send
                 (
