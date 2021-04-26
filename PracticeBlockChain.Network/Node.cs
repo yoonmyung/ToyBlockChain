@@ -19,7 +19,7 @@ namespace PracticeBlockChain.Network
         // Each node stores other nodes' address which it has connected.
         // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
         private Dictionary<int, int> _routingTable;
-        private List<byte[]> _stage;
+        private List<KeyValuePair<byte[], Action>> _stage;
 
         private const string _ip = "127.0.0.1";
         private const int _seedPort = 65000;
@@ -27,7 +27,7 @@ namespace PracticeBlockChain.Network
         public Node(int port)
         {
             SetListener(port);
-            _stage = new List<byte[]>();
+            _stage = new List<KeyValuePair<byte[], Action>>();
             _routingTable = new Dictionary<int, int>();
             Address = (client: port + 1, listener: port);
         }
@@ -133,12 +133,37 @@ namespace PracticeBlockChain.Network
 
                 if (publicKey.Verify((byte[])dataArray[2], (byte[])dataArray[1]))
                 {
-                    _stage.Add((byte[])dataArray[2]);
                     Console.WriteLine
+                    var serializedAction = (byte[])dataArray[3];
+                    var componentsofAction =
+                        (Dictionary<string, object>)
+                        ByteArrayConverter.DeSerialize(serializedAction);
+                    var position =
+                        componentsofAction["payload_x"] is null ?
+                        null :
+                        new TicTacToeGame.Position
+                        (
+                            (int)componentsofAction["payload_x"],
+                            (int)componentsofAction["payload_y"]
+                        );
+                    _stage.Add
                     (
-                        $"Get transaction from " +
-                        $"{((IPEndPoint)client.Client.RemoteEndPoint).Port}"
+                        new KeyValuePair<byte[], Action>
+                        (
+                            (byte[])dataArray[2],
+                            new Action
+                            (
+                                txNonce: (long)componentsofAction["txNonce"],
+                                signer: new Address((byte[])componentsofAction["signer"]),
+                                payload: position,
+                                signature: (byte[])dataArray[1]
+                            )
+                        )
                     );
+                }
+                else
+                {
+                    Console.WriteLine("But fail to verify transaction");
                 }
             }
             else if (dataType.Contains("Byte"))
@@ -147,6 +172,11 @@ namespace PracticeBlockChain.Network
                 // Add validation code.
                 Console.WriteLine("Get block!");
                 // Add block to chain.
+                    var action = _stage.Count > 0 ? _stage[0].Value : null;
+                    if (!(action is null)) 
+                    {
+                        _stage.RemoveAt(0);
+                    }
             }
         }
 
