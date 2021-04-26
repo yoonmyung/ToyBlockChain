@@ -27,24 +27,21 @@ namespace PracticeBlockChain
                 var timeDiffMilliseconds = (int)timeDiff.TotalMilliseconds;
                 var multiplier =
                     1 - (timeDiffMilliseconds / (long)_blockInterval.TotalMilliseconds);
+                var offset = previousBlock.BlockHeader.Difficulty / _minimumDifficulty;
+                multiplier = Math.Max(multiplier, _minimumMultiplier);
+                long nextDifficulty =
+                    Convert.ToInt64
+                    (
+                        previousBlock.BlockHeader.Difficulty + (offset * multiplier)
+                    );
+                nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
+
+                return nextDifficulty;
             }
             catch (NullReferenceException e)
             {
-                // It's genesis block.
                 return _minimumDifficulty;
             }
-            prevPreviousBlock =
-                blockChain.GetBlock(blockChain.TipBlock.BlockHeader.PreviousHash);
-            var offset = previousBlock.BlockHeader.Difficulty / _minimumDifficulty;
-            multiplier = Math.Max(multiplier, _minimumMultiplier);
-            long nextDifficulty = 
-                Convert.ToInt64
-                (
-                    previousBlock.BlockHeader.Difficulty + (offset * multiplier)
-                );
-            nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
-            
-            return nextDifficulty;
         }
     }
 }
