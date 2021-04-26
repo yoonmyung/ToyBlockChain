@@ -247,13 +247,21 @@ namespace PracticeBlockChain.Network
                 Console.WriteLine($"Client: Connected to {destinationPort}");
                 NetworkStream stream = GetStream(destinationPort, client);
                 if (stream is null)
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode.ToString().Equals("ConnectionRefused"))
                 {
-                    Console.WriteLine("Fail to connect to " + destinationPort);
+                    // Node which you try to connect no longer connects to you.
+                    _routingTable.Remove(destinationPort + 1);
+                    PrintRoutingTable();
                 }
                 else
                 {
-                    SendData(data, stream);
+                    Console.WriteLine($"SocketException: {e}");
                 }
+
+                return;
+            }
             }
         }
 
