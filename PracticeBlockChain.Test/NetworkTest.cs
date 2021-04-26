@@ -2,6 +2,10 @@
 using PracticeBlockChain.Network;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Test
@@ -14,18 +18,18 @@ namespace PracticeBlockChain.Test
         public static void Main(string[] args)
         {
             var nodeType = args[0];
-            var blockChain = new BlockChain();
             Node node;
             PrivateKey privateKey = null;
 
             if (nodeType.Equals("seed"))
             {
-                node = new Node(port: _seedPort);
+                node = new Node(port: _seedPort, blockChain: null);
                 node.StartListener();
             }
             else
             {
-                node = new Node(port: int.Parse(args[1]));
+                var keyValue = "";
+
                 try
                 {
                     if (Directory.Exists(Path.Combine(_playerStorage, args[2])))
@@ -60,6 +64,7 @@ namespace PracticeBlockChain.Test
                     _playerStorage = Path.Combine(_playerStorage, keyValue);
                 }
                 var blockChain = new BlockChain(_playerStorage);
+                node = new Node(port: int.Parse(args[1]), blockChain: blockChain);
                 node.StartListener();
                 node.Send
                 (
@@ -79,7 +84,14 @@ namespace PracticeBlockChain.Test
                             while (true)
                             {
                                 var block = Mine(blockChain);
-                                node.RotateRoutingTable(block.BlockHeader.Hash());
+                                node.RotateRoutingTable
+                                (
+                                    new KeyValuePair<byte[], byte[]>
+                                    (
+                                        block.BlockHeader.Hash(),
+                                        block.Serialize()
+                                    )
+                                 );
                             }
                         }
                         else if (nodeType.Equals("player"))
@@ -89,13 +101,15 @@ namespace PracticeBlockChain.Test
                                 if (node.RoutingTable.Count >= 2)
                                 {
                                     var action = MakeAction(privateKey, blockChain);
+                                    Thread.Sleep(20000);
                                     node.RotateRoutingTable
                                     (
                                         new ArrayList
                                         {
-                                        privateKey.PublicKey.Format(true),
-                                        action.Signature,
-                                        action.ActionId
+                                            privateKey.PublicKey.Format(true),
+                                            action.Signature,
+                                            action.ActionId,
+                                            action.Serialize()
                                         }
                                     );
                                 }
@@ -111,13 +125,14 @@ namespace PracticeBlockChain.Test
         {
             var address = new Address(privateKey.PublicKey);
             var random = new Random();
+            var payload = new TicTacToeGame.Position(random.Next(), random.Next());
             var action =
                 new Action
                 (
                     txNonce:
                     blockChain.GetHowmanyBlocksMinermade(address) + 1,
                     signer: address,
-                    payload: new TicTacToeGame.Position(random.Next(), random.Next()),
+                    payload: payload,
                     signature:
                         privateKey.Sign
                         (
@@ -125,7 +140,7 @@ namespace PracticeBlockChain.Test
                             (
                                 txNonce: blockChain.GetHowmanyBlocksMinermade(address) + 1,
                                 signer: address,
-                                payload: new TicTacToeGame.Position(random.Next(), random.Next()),
+                                payload: payload,
                                 signature: null
                             ).Hash()
                         )
