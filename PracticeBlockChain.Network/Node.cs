@@ -20,16 +20,18 @@ namespace PracticeBlockChain.Network
         // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
         private Dictionary<int, int> _routingTable;
         private List<KeyValuePair<byte[], Action>> _stage;
+        private BlockChain _blockChain;
 
         private const string _ip = "127.0.0.1";
         private const int _seedPort = 65000;
 
-        public Node(int port)
+        public Node(int port, BlockChain blockChain)
         {
             SetListener(port);
             _stage = new List<KeyValuePair<byte[], Action>>();
             _routingTable = new Dictionary<int, int>();
             Address = (client: port + 1, listener: port);
+            _blockChain = blockChain;
         }
 
         public (int client, int listener) Address
@@ -177,6 +179,7 @@ namespace PracticeBlockChain.Network
                     {
                         _stage.RemoveAt(0);
                     }
+                    _blockChain.AddBlock(block);
             }
         }
 
