@@ -174,12 +174,39 @@ namespace PracticeBlockChain.Network
                 // Add validation code.
                 Console.WriteLine("Get block!");
                 // Add block to chain.
+                var blockPair = (KeyValuePair<byte[], byte[]>)data;
+                var componentsofBlock =
+                    (Dictionary<string, object>)
+                    ByteArrayConverter.DeSerialize(blockPair.Value);
+                byte[] previousHash =
+                    componentsofBlock["previousHash"] is null ?
+                    null :
+                    (byte[])componentsofBlock["previousHash"];
+                var blockHeader =
+                    new BlockHeader
+                    (
+                        index: (long)componentsofBlock["index"],
+                        previousHash: previousHash,
+                        timeStamp: (DateTimeOffset)componentsofBlock["timeStamp"],
+                        nonce: new Nonce((byte[])componentsofBlock["nonce"]),
+                        difficulty: (long)componentsofBlock["difficulty"]
+                    );
+                var emptyBlock = new Block(blockHeader: blockHeader, action: null);
+                if (emptyBlock.IsValid())
+                {
                     var action = _stage.Count > 0 ? _stage[0].Value : null;
                     if (!(action is null)) 
                     {
                         _stage.RemoveAt(0);
                     }
+                    var block =
+                        new Block
+                        (
+                            blockHeader: emptyBlock.BlockHeader,
+                            action: action
+                        );
                     _blockChain.AddBlock(block);
+                }
             }
         }
 
