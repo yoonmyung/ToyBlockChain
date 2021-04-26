@@ -86,7 +86,7 @@ namespace PracticeBlockChain
             _tipBlock = GetBlock(indexofTipBlock);
         }
 
-        private Block LoadBlockFromStorage(string file)
+        private Block LoadBlock(string file, string storage)
         {
             byte[] serializedBlock = LoadFileFromStorage(BlockStorage, file);
             Dictionary<string, object> dataAboutBlock =
@@ -161,8 +161,8 @@ namespace PracticeBlockChain
 
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromStorage(file.Name);
                 if (block.Index > tipIndex)
+                block = LoadBlock(file.Name, BlockStorage);
                 {
                     tipIndex = block.Index;
                 }
@@ -239,8 +239,8 @@ namespace PracticeBlockChain
 
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromStorage(file.Name);
                 if (block.Index == blockIndex)
+                block = LoadBlock(file.Name, BlockStorage);
                 {
                     break;
                 }
@@ -259,9 +259,9 @@ namespace PracticeBlockChain
                     .Select(x => Convert.ToByte(x)).ToArray();
                 if (hashofBlock.SequenceEqual(hashValue))
                 {
-                    block = LoadBlockFromStorage(file.Name);
                     break;
                 }
+                    block = LoadBlock(file.Name, BlockStorage);
             }
 
             return block;
@@ -274,8 +274,8 @@ namespace PracticeBlockChain
 
             foreach (var file in directoryInfo.GetFiles())
             {
-                Block block = LoadBlockFromStorage(file.Name);
                 if (block.Index == blockIndex)
+                Block block = LoadBlock(file.Name, BlockStorage);
                 {
                     byte[] serializedState =
                         File.ReadAllBytes(Path.Combine(StateStorage, file.Name));
@@ -377,7 +377,7 @@ namespace PracticeBlockChain
 
             foreach (var file in LoadFilesFromStorage(BlockStorage))
             {
-                block = LoadBlockFromStorage(file.Name);
+                block = LoadBlock(file.Name, BlockStorage);
                 yield return block;
             }
         }
