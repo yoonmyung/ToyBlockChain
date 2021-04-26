@@ -9,101 +9,53 @@ namespace PracticeBlockChain
 {
     public class BlockChain
     {
-        private Block _tipBlock;
-        private Block _genesisBlock;
-        private readonly string _blockStorage;
-        private readonly string _actionStorage;
-        private readonly string _stateStorage;
-        private readonly string _privateKeyStorage;
+        private readonly string _genesisBlockPath = "C:\\Users\\1229k\\Documents\\BlockChain\\_Genesisblock";
 
-        public BlockChain()
+        public BlockChain(string playerStorage)
         {
             Random random = new Random();
+            BlockStorage = 
+                Directory.CreateDirectory
+                (
+                    Path.Combine(playerStorage, "_BlockStorage")
+                ).FullName;
+            ActionStorage = 
+                Directory.CreateDirectory
+                (
+                    Path.Combine(playerStorage, "_ActionStorage")
+                ).FullName;
+            StateStorage = 
+                Directory.CreateDirectory
+                (
+                    Path.Combine(playerStorage, "_StateStorage")
+                ).FullName;
         }
 
-        public Block GenesisBlock 
+        public Block GenesisBlock
         {
-            get
-            {
-                return _genesisBlock;
-            }
+            get;
+            private set;
         }
 
         public Block TipBlock
         {
-            get
-            {
-                return _tipBlock;
-            }
+            get;
+            private set;
         }
 
         public string BlockStorage
         {
-            get
-            {
-                return _blockStorage;
-            }
+            get; private set;
         }
 
         public string ActionStorage
         {
-            get
-            {
-                return _actionStorage;
-            }
+            get; private set;
         }
 
         public string StateStorage
         {
-            get
-            {
-                return _stateStorage;
-            }
-        }
-
-        public string PrivateKeyStorage
-        {
-            get
-            {
-                return _privateKeyStorage;
-            }
-        }
-
-        private void SetGenesisBlock()
-        {
-            // Add an empty block.
-            _genesisBlock =
-                new Block
-                (
-                    index: 0,
-                    previousHash: null,
-                    timeStamp: DateTimeOffset.Now,
-                    nonce: new NonceGenerator().GenerateNonce(),
-                    action:
-                    new Action(
-                        txNonce: 0,
-                        signer: new Address(new PrivateKey().PublicKey),
-                        payload: null,
-                        signature: null
-                    ),
-                    difficulty: DifficultyUpdater.UpdateDifficulty(this)
-                );
-            _tipBlock = GenesisBlock;
-            File.WriteAllBytes
-            (
-                Path.Combine(BlockStorage, String.Join("-", GenesisBlock.Hash()) + ".txt"),
-                GenesisBlock.SerializeForStorage()
-            );
-            File.WriteAllBytes
-            (
-                Path.Combine
-                (
-                    ActionStorage, 
-                    String.Join("-", GenesisBlock.GetAction.ActionId) + ".txt"
-                ),
-                GenesisBlock.GetAction.SerializeForStorage()
-            );
-            InitializeState();
+            get; private set;
         }
 
         public void LoadTipBlock()
@@ -121,12 +73,14 @@ namespace PracticeBlockChain
             {
                 Block block = LoadBlockFromStorage(file.Name);
                 if (block.Index == 0)
+                files = LoadFilesFromStorage(_genesisBlockPath);
                 {
-                    _genesisBlock = block;
+                    GenesisBlock = LoadBlock(genesisBlock.Name, _genesisBlockPath);
                 }
                 else if (block.Index > indexofTipBlock)
                 {
                     indexofTipBlock = block.Index;
+                        GenesisBlock = block;
                 }
             }
             _tipBlock = GetBlock(indexofTipBlock);
