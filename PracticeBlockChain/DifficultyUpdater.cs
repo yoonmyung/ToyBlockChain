@@ -13,16 +13,22 @@ namespace PracticeBlockChain
         {
             //EIP-2
             //Libplanet/Blockchain/Policies/BlockPolicy.cs/GetNextBlockDifficulty 함수 참조 
-            var previousBlock = blockChain.TipBlock;
+            Block previousBlock = null;
             Block prevPreviousBlock = null;
 
-            if (blockChain.TipBlock.BlockHeader.PreviousHash is null)
+            try
+            {
+                previousBlock = blockChain.TipBlock;
+                prevPreviousBlock =
+                    blockChain.GetBlock(blockChain.TipBlock.BlockHeader.PreviousHash);
                 var timeDiff =
                     previousBlock.BlockHeader.TimeStamp
                     - prevPreviousBlock.BlockHeader.TimeStamp;
                 var timeDiffMilliseconds = (int)timeDiff.TotalMilliseconds;
                 var multiplier =
                     1 - (timeDiffMilliseconds / (long)_blockInterval.TotalMilliseconds);
+            }
+            catch (NullReferenceException e)
             {
                 // It's genesis block.
                 return _minimumDifficulty;
