@@ -348,7 +348,10 @@ namespace PracticeBlockChain.Network
             {
                 if (address.Key.Equals(Address.client))
                 {
-                    continue;
+                    if (!(data.GetType().FullName.Contains("KeyValuePair")))
+                    {
+                        continue;
+                    }
                 }
                 Send(address.Value, data);
             }
