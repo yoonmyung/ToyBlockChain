@@ -5,6 +5,7 @@ namespace PracticeBlockChain
     public static class DifficultyUpdater
     {
         public static readonly long _minimumDifficulty = 1024;
+        public static readonly TimeSpan _blockInterval = TimeSpan.FromMilliseconds(10000);
         public static readonly long _difficultyBoundDivisor = 128;
         public const long _minimumMultiplier = -99;
 
@@ -16,17 +17,18 @@ namespace PracticeBlockChain
             Block prevPreviousBlock = null;
 
             if (blockChain.TipBlock.BlockHeader.PreviousHash is null)
+                var timeDiff =
+                    previousBlock.BlockHeader.TimeStamp
+                    - prevPreviousBlock.BlockHeader.TimeStamp;
+                var timeDiffMilliseconds = (int)timeDiff.TotalMilliseconds;
+                var multiplier =
+                    1 - (timeDiffMilliseconds / (long)_blockInterval.TotalMilliseconds);
             {
                 // It's genesis block.
                 return _minimumDifficulty;
             }
             prevPreviousBlock =
                 blockChain.GetBlock(blockChain.TipBlock.BlockHeader.PreviousHash);
-            TimeSpan timeInterval = 
-                previousBlock.BlockHeader.TimeStamp 
-                - prevPreviousBlock.BlockHeader.TimeStamp;
-            var multiplier =
-                1 - (timeInterval.TotalMilliseconds / _difficultyBoundDivisor);
             var offset = previousBlock.BlockHeader.Difficulty / _minimumDifficulty;
             multiplier = Math.Max(multiplier, _minimumMultiplier);
             long nextDifficulty = 
