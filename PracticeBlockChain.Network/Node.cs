@@ -114,6 +114,7 @@ namespace PracticeBlockChain.Network
                 PutAddressToRoutingtable((string)data);
                 if (Address.listener.Equals(_seedPort))
                 {
+                    Console.WriteLine($"Send routing table to {_routingTable[((IPEndPoint)client.Client.RemoteEndPoint).Port]}");
                     Send
                     (
                         _routingTable[((IPEndPoint)client.Client.RemoteEndPoint).Port], 
@@ -133,9 +134,13 @@ namespace PracticeBlockChain.Network
                 var dataArray = (ArrayList)data;
                 var publicKey = new PublicKey((byte[])dataArray[0]);
 
+                Console.WriteLine
+                (
+                    $"Get transaction from " +
+                    $"{((IPEndPoint)client.Client.RemoteEndPoint).Port}"
+                );
                 if (publicKey.Verify((byte[])dataArray[2], (byte[])dataArray[1]))
                 {
-                    Console.WriteLine
                     var serializedAction = (byte[])dataArray[3];
                     var componentsofAction =
                         (Dictionary<string, object>)
@@ -168,12 +173,14 @@ namespace PracticeBlockChain.Network
                     Console.WriteLine("But fail to verify transaction");
                 }
             }
-            else if (dataType.Contains("Byte"))
+            else if (dataType.Contains("KeyValuePair"))
             {
                 // Get data from transporting block.
-                // Add validation code.
-                Console.WriteLine("Get block!");
-                // Add block to chain.
+                Console.WriteLine
+                (
+                    $"Get block from " +
+                    $"{((IPEndPoint)client.Client.RemoteEndPoint).Port}"
+                );
                 var blockPair = (KeyValuePair<byte[], byte[]>)data;
                 var componentsofBlock =
                     (Dictionary<string, object>)
@@ -206,6 +213,10 @@ namespace PracticeBlockChain.Network
                             action: action
                         );
                     _blockChain.AddBlock(block);
+                }
+                else
+                {
+                    Console.WriteLine("But fail to validate block");
                 }
             }
         }
@@ -241,12 +252,11 @@ namespace PracticeBlockChain.Network
         public void Send(int destinationPort, object data)
         {
             var client = SetClient();
-            client.Connect(_ip, destinationPort);
-            if (client.Connected)
+
+            try
             {
-                Console.WriteLine($"Client: Connected to {destinationPort}");
-                NetworkStream stream = GetStream(destinationPort, client);
-                if (stream is null)
+                client.Connect(_ip, destinationPort);
+            }
             catch (SocketException e)
             {
                 if (e.SocketErrorCode.ToString().Equals("ConnectionRefused"))
@@ -262,6 +272,15 @@ namespace PracticeBlockChain.Network
 
                 return;
             }
+            NetworkStream stream = GetStream(destinationPort, client);
+            if (stream is null)
+            {
+                Console.WriteLine("Fail to connect to " + destinationPort);
+            }
+            else
+            {
+                Console.WriteLine($"Client: Connected to {destinationPort}");
+                SendData(data, stream);
             }
         }
 
@@ -290,7 +309,7 @@ namespace PracticeBlockChain.Network
                 }
                 else
                 {
-                    // Console.WriteLine($"SocketException: {e}");
+                    Console.WriteLine($"SocketException: {e}");
                 }
 
                 return null;
