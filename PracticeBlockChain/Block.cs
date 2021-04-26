@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace PracticeBlockChain
 {
@@ -43,11 +40,14 @@ namespace PracticeBlockChain
             componentsToSerialize.Add("timeStamp", BlockHeader.TimeStamp);
             componentsToSerialize.Add("index", BlockHeader.Index);
             componentsToSerialize.Add("difficulty", BlockHeader.Difficulty);
-            componentsToSerialize.Add
-            (
-                "actionId",
-                Action.ActionId is null ? null : Action.ActionId
-            );
+            if (Action is null)
+            {
+                componentsToSerialize.Add("actionId", null);
+            }
+            else
+            {
+                componentsToSerialize.Add("actionId", Action.ActionId);
+            }
             binFormatter.Serialize(mStream, componentsToSerialize);
 
             return ByteArrayConverter.Compress(mStream.ToArray());
