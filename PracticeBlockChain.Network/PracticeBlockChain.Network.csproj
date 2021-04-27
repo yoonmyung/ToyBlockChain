@@ -43,6 +43,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\PracticeBlockChain.Cryptography\PracticeBlockChain.Cryptography.csproj" />
+	  <ProjectReference Include="..\PracticeBlockChain\PracticeBlockChain.csproj" />
 	</ItemGroup>
 
 </Project>

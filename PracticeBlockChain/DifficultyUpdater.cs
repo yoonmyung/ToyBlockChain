@@ -4,7 +4,8 @@ namespace PracticeBlockChain
 {
     public static class DifficultyUpdater
     {
-        public static readonly long _minimumDifficulty = 1024;
+        public static readonly long _minimumDifficulty = 55000;
+        public static readonly TimeSpan _blockInterval = TimeSpan.FromMilliseconds(10000);
         public static readonly long _difficultyBoundDivisor = 128;
         public const long _minimumMultiplier = -99;
 
@@ -12,26 +13,35 @@ namespace PracticeBlockChain
         {
             //EIP-2
             //Libplanet/Blockchain/Policies/BlockPolicy.cs/GetNextBlockDifficulty 함수 참조 
-            var previousBlock = blockChain.TipBlock;
+            Block previousBlock = null;
             Block prevPreviousBlock = null;
+
             try
             {
-                prevPreviousBlock = blockChain.GetBlock(blockChain.TipBlock.PreviousHash);
+                previousBlock = blockChain.TipBlock;
+                prevPreviousBlock =
+                    blockChain.GetBlock(blockChain.TipBlock.BlockHeader.PreviousHash);
+                var timeDiff =
+                    previousBlock.BlockHeader.TimeStamp
+                    - prevPreviousBlock.BlockHeader.TimeStamp;
+                var timeDiffMilliseconds = (int)timeDiff.TotalMilliseconds;
+                var multiplier =
+                    1 - (timeDiffMilliseconds / (long)_blockInterval.TotalMilliseconds);
+                var offset = previousBlock.BlockHeader.Difficulty / _minimumDifficulty;
+                multiplier = Math.Max(multiplier, _minimumMultiplier);
+                long nextDifficulty =
+                    Convert.ToInt64
+                    (
+                        previousBlock.BlockHeader.Difficulty + (offset * multiplier)
+                    );
+                nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
+
+                return nextDifficulty;
             }
-            catch (Exception e)
+            catch (NullReferenceException e)
             {
                 return _minimumDifficulty;
             }
-            TimeSpan timeInterval = previousBlock.TimeStamp - prevPreviousBlock.TimeStamp;
-            var multiplier =
-                1 - (timeInterval.TotalMilliseconds / _difficultyBoundDivisor);
-            var offset = previousBlock.Difficulty / _minimumDifficulty;
-            multiplier = Math.Max(multiplier, _minimumMultiplier);
-            long nextDifficulty = 
-                Convert.ToInt64(previousBlock.Difficulty + (offset * multiplier));
-            nextDifficulty = Math.Max(nextDifficulty, _minimumDifficulty);
-            
-            return nextDifficulty;
         }
     }
 }

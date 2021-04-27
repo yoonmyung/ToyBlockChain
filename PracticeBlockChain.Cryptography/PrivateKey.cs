@@ -15,7 +15,7 @@ namespace PracticeBlockChain.Cryptography
     public class PrivateKey
     {
         // BouncyCastle
-        // : C#에서 bitcoin에 사용되는 public key와 private key 생성에 쓰이는 라이브러리
+        // Library used to generate public key and private key.
         private PublicKey _publicKey;
 
         public PrivateKey()
@@ -53,7 +53,10 @@ namespace PracticeBlockChain.Cryptography
 
         public byte[] ByteArray => KeyParam.D.ToByteArrayUnsigned();
 
-        internal ECPrivateKeyParameters KeyParam { get; }
+        internal ECPrivateKeyParameters KeyParam 
+        { 
+            get; 
+        }
 
         internal static ECDomainParameters GetECParameters()
         {
@@ -63,6 +66,7 @@ namespace PracticeBlockChain.Cryptography
         private static ECDomainParameters GetECParameters(string name)
         {
             X9ECParameters ps = SecNamedCurves.GetByName(name);
+
             return new ECDomainParameters(ps.Curve, ps.G, ps.N, ps.H);
         }
 
@@ -92,28 +96,28 @@ namespace PracticeBlockChain.Cryptography
 
         public byte[] Sign(byte[] messageHash)
         {
-            // messageHash = 서명할 Action
+            // Parameter messageHash is the hash value of action to sign.
+            // Sign on the hash value of action. 
+            // Not on an action itself.
             var h = new Sha256Digest();
             var kCalculator = new HMacDsaKCalculator(h);
             var signer = new ECDsaSigner(kCalculator);
+
             signer.Init(true, this.KeyParam);
-            BigInteger[] rs =
-                signer.GenerateSignature(messageHash);
+            BigInteger[] rs = signer.GenerateSignature(messageHash);
             var r = rs[0];
             var s = rs[1];
-
-            BigInteger otherS =
-                this.KeyParam.Parameters.N.Subtract(s);
-            if (s.CompareTo(otherS) == 1)
+            BigInteger otherS = this.KeyParam.Parameters.N.Subtract(s);
+            if (s.CompareTo(otherS).Equals(1))
             {
                 s = otherS;
             }
-
             var bos = new MemoryStream(72);
             var seq = new DerSequenceGenerator(bos);
             seq.AddObject(new DerInteger(r));
             seq.AddObject(new DerInteger(s));
             seq.Close();
+
             return bos.ToArray();
         }
     }

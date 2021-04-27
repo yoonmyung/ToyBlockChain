@@ -1,131 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace PracticeBlockChain
 {
     [Serializable]
     public class Block
     {
-        public Block(
-            long index, 
-            byte[] previousHash, 
-            DateTimeOffset timeStamp, 
-            Nonce nonce, 
-            Action action,
-            long difficulty
-        ) 
+        public Block(BlockHeader blockHeader, Action action) 
         {
-            Index = index;
-            PreviousHash = previousHash;
-            TimeStamp = timeStamp;
-            Nonce = nonce;
-            GetAction = action;
-            Difficulty = difficulty;
+            BlockHeader = blockHeader;
+            Action = action;
         }
 
-        public long Index
+        public BlockHeader BlockHeader
         {
             get;
         }
 
-        public byte[] PreviousHash
+        public Action Action
         {
             get;
-        }
-
-        public DateTimeOffset TimeStamp
-        {
-            get;
-        }
-
-        public Nonce Nonce
-        {
-            get;
-        }
-
-        public Action GetAction
-        {
-            get;
-        }
-
-        public long Difficulty
-        {
-            get;
-        }
-
-        private Dictionary<string, object> ComposeTuplesToSerialize()
-        {
-            var componentsToSerialize = new Dictionary<string, object>();
-            
-            if (!(PreviousHash is null))
-            {
-                componentsToSerialize.Add("previousHash", PreviousHash);
-            }
-            else
-            {
-                componentsToSerialize.Add("previousHash", null);
-            }
-            componentsToSerialize.Add("nonce", Nonce.NonceValue);
-            componentsToSerialize.Add("timeStamp", TimeStamp);
-
-            return componentsToSerialize;
         }
 
         public byte[] Serialize()
         {
-            Dictionary<string, object> componentsToSerialize = ComposeTuplesToSerialize();
+            var componentsToSerialize = new Dictionary<string, object>();
             var binFormatter = new BinaryFormatter();
             var mStream = new MemoryStream();
 
-            if (!(GetAction is null))
-            {
-                componentsToSerialize.Add("signature", GetAction.Signature);
-            }
-            binFormatter.Serialize(mStream, componentsToSerialize);
-
-            return ByteArrayConverter.Compress(mStream.ToArray());
-        }
-
-        public byte[] SerializeForStorage()
-        {
-            Dictionary<string, object> componentsToSerialize = ComposeTuplesToSerialize();
-            var binFormatter = new BinaryFormatter();
-            var mStream = new MemoryStream();
-
-            componentsToSerialize.Add("index", Index);
-            componentsToSerialize.Add("difficulty", Difficulty);
-            if (!(GetAction is null))
-            {
-                componentsToSerialize.Add("actionId", GetAction.ActionId);
-            }
-            else
+            componentsToSerialize.Add
+            (
+                "previousHash",
+                BlockHeader.PreviousHash is null ? null : BlockHeader.PreviousHash
+            );
+            componentsToSerialize.Add("nonce", BlockHeader.Nonce.NonceValue);
+            componentsToSerialize.Add("timeStamp", BlockHeader.TimeStamp);
+            componentsToSerialize.Add("index", BlockHeader.Index);
+            componentsToSerialize.Add("difficulty", BlockHeader.Difficulty);
+            if (Action is null)
             {
                 componentsToSerialize.Add("actionId", null);
             }
+            else
+            {
+                componentsToSerialize.Add("actionId", Action.ActionId);
+            }
             binFormatter.Serialize(mStream, componentsToSerialize);
+
             return ByteArrayConverter.Compress(mStream.ToArray());
         }
 
-        public byte[] Hash()
+        public bool IsValid()
         {
-            // HashCash의 CalculateHash와의 차이점
-            // HashCash에서는 랜덤 nonce가 들어가지만, 여기서는 이 블록의 nonce가 들어간다
-            var hashAlgo = SHA256.Create();
-            var concatenated =
-                String.Join
-                (
-                    "",
-                    Serialize().Concat(Nonce.NonceValue).ToArray()
-                );
-            var byteArray = Encoding.GetEncoding("iso-8859-1").GetBytes(concatenated);
-            var hashDigest = new BigInteger(hashAlgo.ComputeHash(byteArray));
-            return hashDigest.ToByteArray();
+            var blockHash = new BigInteger(this.BlockHeader.Hash());
+
+            if (this.BlockHeader.Difficulty < 0)
+            {
+                Console.WriteLine(1);
+                return false;
+            }
+            else if (!(HashCash.IsValid(this.BlockHeader)))
+            {
+                Console.WriteLine(3);
+                return false;
+            }
+            else if 
+            (
+                this.BlockHeader.Index > 0 && 
+                this.BlockHeader.PreviousHash is null
+            )
+            {
+                Console.WriteLine(4);
+                return false;
+            }
+
+            return true;
         }
     }
 }
