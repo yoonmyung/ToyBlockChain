@@ -1,106 +1,269 @@
+using PracticeBlockChain.Cryptography;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PracticeBlockChain.Network
-{
+{ 
     public class Node
     {
-        // _routingTable = 
-        // {
-        //     peer's address of listener, 
-        //     [ peer's address of client, is it connected with this node? ] 
-        // }
-        private Dictionary<string, string> _routingTable;
-        private TcpClient _client;
-        private TcpListener _listener;
-        private NetworkStream _stream;
-        private string[] _address;
+        // Each node has a listener object.
+        // Whenever another node sends connection, a node takes it by its listener object.
+        // Also node can send connection by making client object
+        // and connect it to destination node's listener object.
+        // Each node stores other nodes' address which it has connected.
+        // Routing table is Dictionary object. And it's composed of client as Key and listener as Value. 
+        private Dictionary<int, int> _routingTable;
+        private List<KeyValuePair<byte[], Action>> _stage;
+        private BlockChain _blockChain;
 
-        public Node(bool isSeed, int port)
+        private const string _ip = "127.0.0.1";
+        private const int _seedPort = 65000;
+
+        public Node(int port, BlockChain blockChain)
         {
-            string seedNodeAddress = "127.0.0.1:65000";
+            SetListener(port);
+            _stage = new List<KeyValuePair<byte[], Action>>();
+            _routingTable = new Dictionary<int, int>();
+            Address = (client: port + 1, listener: port);
+            _blockChain = blockChain;
+        }
 
-            SetListener("127.0.0.1", port);
-            if (!isSeed)
+        public (int client, int listener) Address
+        {
+            get;
+            private set;
+        }
+
+        public Dictionary<int, int> RoutingTable
+        {
+            get
             {
-                _address =
-                    new string[]
-                    {
-                        "127.0.0.1:" + (port + 1).ToString(), "127.0.0.1:" + port.ToString()
-                    };
-                // It's peer node.
-                StartConnection(seedNodeAddress);
+                return _routingTable;
             }
         }
 
-        private void SetListener(string IP, int port)
+        private TcpListener Listener
         {
-            _routingTable = new Dictionary<string, string>();
-            _listener = new TcpListener(IPAddress.Parse(IP), port);
-            _listener.Server.SetSocketOption
+            get;
+            set;
+        }
+
+        private void SetListener(int port)
+        {
+            Listener = new TcpListener(IPAddress.Parse(_ip), port);
+            Listener.Server.SetSocketOption
             (
                 SocketOptionLevel.Socket,
                 SocketOptionName.ReuseAddress,
                 true
             );
-            _listener.Start();
-            var listeningThread = new Thread(Listen);
+        }
+
+        public void StartListener()
+        {
+            Listener.Start();
+            var listeningThread = 
+                new Thread
+                (
+                    () =>
+                    {
+                        while (true)
+                        {
+                            Listen();
+                        }
+                    }
+                 );
             listeningThread.Start();
         }
 
-        private void SetClient(string IP, int port)
+        public void StopListener()
         {
-            _client = new TcpClient(new IPEndPoint(IPAddress.Parse(IP), port));
-            _client.Client.SetSocketOption
-            (
-                SocketOptionLevel.Socket,
-                SocketOptionName.ReuseAddress,
-                true
-            );
+            Listener.Stop();
         }
 
-        private void Listen()
+        public void Listen()
         {
-            while (true)
+            Console.WriteLine("Waiting for a connection. . .");
+            var client = Listener.AcceptTcpClient();
+            Console.WriteLine
+            (
+                "Listener: Connected to " +
+                ((IPEndPoint)client.Client.RemoteEndPoint).Port
+            );
+            Receive(client);
+            DisconnectClient(client, client.GetStream());
+        }
+
+        private void Receive(object obj)
+        {
+            var client = (TcpClient)obj;
+            var stream = GetStream(Address.listener, client);
+
+            var data = GetData(stream);
+            string dataType = data.GetType().FullName;
+
+            if (dataType.Contains("String"))
             {
-                Console.WriteLine("Waiting for a connection... ");
-                var node = _listener.AcceptTcpClient();
-                _stream = node.GetStream();
-                PutAddressToRoutingtable(node);
-                SendData(_routingTable);
+                // Gets address from another node.
+                PutAddressToRoutingtable((string)data);
+                if (Address.listener.Equals(_seedPort))
+                {
+                    Console.WriteLine($"Send routing table to {_routingTable[((IPEndPoint)client.Client.RemoteEndPoint).Port]}");
+                    Send
+                    (
+                        _routingTable[((IPEndPoint)client.Client.RemoteEndPoint).Port], 
+                        _routingTable
+                    );
+                }
+            }
+            else if (dataType.Contains("Dictionary"))
+            {
+                // Get routing table from seed.
+                _routingTable = (Dictionary<int, int>)data;
+                PrintRoutingTable();
+            }
+            else if (dataType.Contains("ArrayList"))
+            {
+                // Get data from transporting transaction(action).
+                var dataArray = (ArrayList)data;
+                var publicKey = new PublicKey((byte[])dataArray[0]);
+
+                Console.WriteLine
+                (
+                    $"Get transaction from " +
+                    $"{((IPEndPoint)client.Client.RemoteEndPoint).Port}"
+                );
+                if (publicKey.Verify((byte[])dataArray[2], (byte[])dataArray[1]))
+                {
+                    var serializedAction = (byte[])dataArray[3];
+                    var componentsofAction =
+                        (Dictionary<string, object>)
+                        ByteArrayConverter.DeSerialize(serializedAction);
+                    var position =
+                        componentsofAction["payload_x"] is null ?
+                        null :
+                        new TicTacToeGame.Position
+                        (
+                            (int)componentsofAction["payload_x"],
+                            (int)componentsofAction["payload_y"]
+                        );
+                    _stage.Add
+                    (
+                        new KeyValuePair<byte[], Action>
+                        (
+                            (byte[])dataArray[2],
+                            new Action
+                            (
+                                txNonce: (long)componentsofAction["txNonce"],
+                                signer: new Address((byte[])componentsofAction["signer"]),
+                                payload: position,
+                                signature: (byte[])dataArray[1]
+                            )
+                        )
+                    );
+                }
+                else
+                {
+                    Console.WriteLine("But fail to verify transaction");
+                }
+            }
+            else if (dataType.Contains("KeyValuePair"))
+            {
+                // Get data from transporting block.
+                Console.WriteLine
+                (
+                    $"Get block from " +
+                    $"{((IPEndPoint)client.Client.RemoteEndPoint).Port}"
+                );
+                var blockPair = (KeyValuePair<byte[], byte[]>)data;
+                var componentsofBlock =
+                    (Dictionary<string, object>)
+                    ByteArrayConverter.DeSerialize(blockPair.Value);
+                byte[] previousHash =
+                    componentsofBlock["previousHash"] is null ?
+                    null :
+                    (byte[])componentsofBlock["previousHash"];
+                var blockHeader =
+                    new BlockHeader
+                    (
+                        index: (long)componentsofBlock["index"],
+                        previousHash: previousHash,
+                        timeStamp: (DateTimeOffset)componentsofBlock["timeStamp"],
+                        nonce: new Nonce((byte[])componentsofBlock["nonce"]),
+                        difficulty: (long)componentsofBlock["difficulty"]
+                    );
+                var emptyBlock = new Block(blockHeader: blockHeader, action: null);
+                if (emptyBlock.IsValid())
+                {
+                    var action = _stage.Count > 0 ? _stage[0].Value : null;
+                    if (!(action is null)) 
+                    {
+                        _stage.RemoveAt(0);
+                    }
+                    var block =
+                        new Block
+                        (
+                            blockHeader: emptyBlock.BlockHeader,
+                            action: action
+                        );
+                    _blockChain.AddBlock(block);
+                }
+                else
+                {
+                    Console.WriteLine("But fail to validate block");
+                }
             }
         }
 
-        private bool ConnectToNode(object destinationAddress)
+        private TcpClient SetClient()
         {
-            var neighborNode = (string)destinationAddress;
-            var seperatedAddress = neighborNode.Split(":");
+            TcpClient client = null;
+            while (true)
+            {
+                try
+                {
+                    client =
+                        new TcpClient
+                        (
+                            new IPEndPoint(IPAddress.Parse(_ip), Address.client)
+                        );
+                    client.Client.SetSocketOption
+                    (
+                        SocketOptionLevel.Socket,
+                        SocketOptionName.ReuseAddress,
+                        true
+                    );
+                    break;
+                }
+                catch (SocketException e) 
+                { 
+                }
+            }
+
+            return client;
+        }
+
+        public void Send(int destinationPort, object data)
+        {
+            var client = SetClient();
 
             try
             {
-                _client.Connect(seperatedAddress[0], int.Parse(seperatedAddress[1]));
-                _stream = _client.GetStream();
-                Console.WriteLine($"Connected to {neighborNode}");
-                
-                return true;
-            }
-            catch (ArgumentNullException e)
-            {
-                Console.WriteLine($"ArgumentNullException: {e}");
-                return false;
+                client.Connect(_ip, destinationPort);
             }
             catch (SocketException e)
             {
                 if (e.SocketErrorCode.ToString().Equals("ConnectionRefused"))
                 {
-                    // Node you try to connect no longer connected to you.
-                    _routingTable.Remove(neighborNode);
+                    // Node which you try to connect no longer connects to you.
+                    _routingTable.Remove(destinationPort + 1);
                     PrintRoutingTable();
                 }
                 else
@@ -108,94 +271,117 @@ namespace PracticeBlockChain.Network
                     Console.WriteLine($"SocketException: {e}");
                 }
 
-                return false;
+                return;
             }
-        }
-
-        private void DisconnectToNode()
-        {
-            _client.Close();
-            _client.Dispose();
-        }
-
-        private void SendAddress()
-        {
-            var byteAddress =
-                Encoding.ASCII.GetBytes(string.Format(_address[0] + "," + _address[1]));
-            _stream.Write(byteAddress, 0, byteAddress.Length);
-        }
-
-        private string GetAddress(TcpClient node)
-        {
-            var bytes = new Byte[256];
-            string nodeAddress = null;
-
-            int addressLength = _stream.Read(bytes, 0, bytes.Length);
-            nodeAddress = Encoding.ASCII.GetString(bytes, 0, addressLength);
-
-            return nodeAddress;
-        }
-
-        private void PutAddressToRoutingtable(object client)
-        {
-            var node = (TcpClient)client;
-
-            string nodeAddress = GetAddress(node);
-            string[] seperatedAddress = nodeAddress.Split(",");
-            Console.WriteLine($"Connected client: {seperatedAddress[0]}");
-            if (!(_routingTable.ContainsKey(seperatedAddress[1])))
+            NetworkStream stream = GetStream(destinationPort, client);
+            if (stream is null)
             {
-                _routingTable.Add(seperatedAddress[1], seperatedAddress[0]);
-            }
-
-            PrintRoutingTable();
-        }
-
-        private void SendData(object data)
-        {
-            var binaryFormatter = new BinaryFormatter();
-            var memoryStream = new MemoryStream();
-
-            binaryFormatter.Serialize(memoryStream, data);
-            var sizeofData = BitConverter.GetBytes(memoryStream.Length);
-            byte[] byteArrayOfData = memoryStream.ToArray();
-            _stream.Write(sizeofData, 0, 4);
-            _stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
-        }
-
-        public object GetData()
-        {
-            var binaryFormatter = new BinaryFormatter();
-            byte[] sizeofDataAsByte = new byte[4];
-
-            _stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
-            var sizeofData = BitConverter.ToInt32(sizeofDataAsByte, 0);
-            var dataAsByte = new byte[sizeofData];
-            _stream.Read(dataAsByte, 0, dataAsByte.Length);
-
-            var memoryStream = new MemoryStream(dataAsByte);
-            memoryStream.Position = 0;
-            var data = binaryFormatter.Deserialize(memoryStream);
-            if (data.GetType().FullName.Contains("System.Collections.Generic.Dictionary"))
-            {
-                _routingTable = (Dictionary<string, string>)data;
-                PrintRoutingTable();
+                Console.WriteLine("Fail to connect to " + destinationPort);
             }
             else
             {
-                Console.WriteLine($"Received from neighbornode: {data}");
+                Console.WriteLine($"Client: Connected to {destinationPort}");
+                SendData(data, stream);
             }
         }
 
-        public void RotateRoutingTable()
+        private NetworkStream GetStream
+            (object destinationAddress, TcpClient client)
         {
+            var destinationPort = (int)destinationAddress;
+
+            try
+            {
+                return client.GetStream();
+            }
+            catch (ArgumentNullException e)
+            {
+                Console.WriteLine($"ArgumentNullException: {e}");
+
+                return null;
+            }
+            catch (SocketException e)
+            {
+                if (e.SocketErrorCode.ToString().Equals("ConnectionRefused"))
+                {
+                    // Node which you try to connect no longer connects to you.
+                    _routingTable.Remove(destinationPort + 1);
+                    PrintRoutingTable();
+                }
+                else
+                {
+                    Console.WriteLine($"SocketException: {e}");
+                }
+
+                return null;
+            }
+        }
+
+        private void DisconnectClient(TcpClient client, NetworkStream stream)
+        {
+            if (!(stream is null))
+            {
+                stream.Flush();
+                stream.Close();
+            }
+            client.Close();
+            client.Dispose();
+        }
+
+        private void PutAddressToRoutingtable(string address)
+        {
+            string[] seperatedAddress = address.Split(",");
+
+            if (!(_routingTable.ContainsKey(int.Parse(seperatedAddress[0]))))
+            {
+                _routingTable.Add
+                (
+                    int.Parse(seperatedAddress[0]), 
+                    int.Parse(seperatedAddress[1])
+                );
+            }
+            PrintRoutingTable();
+        }
+
+        private void SendData(object data, NetworkStream stream)
+        {
+            var binaryFormatter = new BinaryFormatter();
+            var memoryStream = new MemoryStream();
+            binaryFormatter.Serialize(memoryStream, data);
+            var sizeofData = BitConverter.GetBytes(memoryStream.Length);
+            byte[] byteArrayOfData = memoryStream.ToArray();
+            stream.Write(sizeofData, 0, 4);
+            stream.Write(byteArrayOfData, 0, byteArrayOfData.Length);
+        }
+
+        public object GetData(NetworkStream stream)
+        {
+            var binaryFormatter = new BinaryFormatter();
+            byte[] sizeofDataAsByte = new byte[4];
+            stream.Read(sizeofDataAsByte, 0, sizeofDataAsByte.Length);
+            var sizeofData = BitConverter.ToInt32(sizeofDataAsByte, 0);
+            var dataAsByte = new byte[sizeofData];
+            stream.Read(dataAsByte, 0, dataAsByte.Length);
+            var memoryStream = new MemoryStream(dataAsByte);
+            memoryStream.Position = 0;
+            var data = binaryFormatter.Deserialize(memoryStream);
+
+            return data;
+        }
+
+        public void RotateRoutingTable(object data)
+        {
+            while (_routingTable.Count < 1) ;
             foreach (var address in _routingTable)
             {
-                if (address.Value.Equals(_address[0]))
+                if (address.Key.Equals(Address.client))
                 {
-                    continue;
+                    if (!(data.GetType().FullName.Contains("KeyValuePair")))
+                    {
+                        continue;
+                    }
                 }
-                StartConnection(address.Key);
+                Send(address.Value, data);
             }
         }
 
@@ -205,29 +391,9 @@ namespace PracticeBlockChain.Network
             foreach (var address in _routingTable)
             {
                 Console.WriteLine
-                (
-                    $"Client: {address.Value}, " +
-                    $"Listener: {address.Key}"
-                );
+                    ($"Client: {address.Key}, Listener: {address.Value}");
             }
             Console.WriteLine();
-        }
-
-        public void StartConnection(string destinationAddress)
-        {
-            string[] clientAddress = _address[0].Split(":");
-
-            SetClient(clientAddress[0], int.Parse(clientAddress[1]));
-            if (!ConnectToNode(destinationAddress))
-            {
-                Console.WriteLine("Fail to connect to " + destinationAddress);
-            }
-            else
-            {
-                SendAddress();
-                GetData();
-            }
-            DisconnectToNode();
         }
     }
 }

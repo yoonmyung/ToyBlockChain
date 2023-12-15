@@ -519,3 +519,4 @@ MigrationBackup/
 
 # Additional file to ignore
 .NETFramework,Version=v4.7.1.AssemblyAttributes.cs
+_Genesisblock/

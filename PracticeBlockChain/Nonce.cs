@@ -6,8 +6,6 @@ namespace PracticeBlockChain
 {
     public class Nonce
     {
-        private readonly byte[] _nonceValue = null;
-
         public Nonce(byte[] nonceValue)
         {
             NonceValue = nonceValue;
@@ -16,6 +14,15 @@ namespace PracticeBlockChain
         public byte[] NonceValue
         {
             get;
+        }
+
+        public static Nonce GenerateNonce()
+        {
+            var random = new Random();
+            var nonceBytes = new byte[10];
+            random.NextBytes(nonceBytes);
+
+            return new Nonce(nonceBytes);
         }
     }
 }
